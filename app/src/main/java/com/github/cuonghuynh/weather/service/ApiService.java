@@ -27,6 +27,13 @@ public interface ApiService {
       @Query("appid") String appId
   );
 
+  @GET("weather")
+  Single<CurrentWeatherResponse> getCurrentWeatherForLatLon(
+          @Query("lat") double lat,
+          @Query("lon") double lon,
+          @Query("appid") String appId
+  );
+
   /**
    * Get five days weather forecast.
    *

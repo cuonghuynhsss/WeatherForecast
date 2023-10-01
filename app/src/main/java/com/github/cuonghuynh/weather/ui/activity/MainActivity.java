@@ -3,6 +3,7 @@ package com.github.cuonghuynh.weather.ui.activity;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,6 +18,7 @@ import com.bumptech.glide.Glide;
 import com.github.cuonghuynh.weather.R;
 import com.github.cuonghuynh.weather.databinding.ActivityMainBinding;
 import com.github.cuonghuynh.weather.model.CityInfo;
+import com.github.cuonghuynh.weather.model.common.WeatherItem;
 import com.github.cuonghuynh.weather.model.currentweather.CurrentWeatherResponse;
 import com.github.cuonghuynh.weather.model.daysweather.ListItem;
 import com.github.cuonghuynh.weather.model.daysweather.MultipleDaysWeatherResponse;
@@ -278,6 +280,7 @@ public class MainActivity extends BaseActivity {
   private void requestWeather(String cityName, boolean isSearch) {
     if (AppUtil.isNetworkConnected()) {
       getCurrentWeather(cityName, isSearch);
+      getCurrentWeatherForLatLon(21.0282,  105.8542);
       getFiveDaysWeather(cityName);
     } else {
       SnackbarUtil
@@ -301,7 +304,7 @@ public class MainActivity extends BaseActivity {
               public void onSuccess(CurrentWeatherResponse currentWeatherResponse) {
                 isLoad = true;
                 storeCurrentWeather(currentWeatherResponse);
-                storeCityInfo(currentWeatherResponse);
+                 storeCityInfo(currentWeatherResponse);
                 binding.swipeContainer.setRefreshing(false);
                 if (isSearch) {
                   prefser.remove(Constants.LAST_STORED_MULTIPLE_DAYS);
@@ -322,6 +325,42 @@ public class MainActivity extends BaseActivity {
 
     );
   }
+
+  private void getCurrentWeatherForLatLon(double lat, double lon) {
+    apiKey = getResources().getString(R.string.open_weather_map_api);
+    disposable.add(
+            apiService.getCurrentWeatherForLatLon(
+                            lat, lon, apiKey)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(new DisposableSingleObserver<CurrentWeatherResponse>() {
+                      @Override
+                      public void onSuccess(CurrentWeatherResponse currentWeatherResponse) {
+                        isLoad = true;
+//                        storeCurrentWeather(currentWeatherResponse);
+//                        storeCityInfo(currentWeatherResponse);
+                        Log.d("aaa", currentWeatherResponse.getBase());
+                        Log.d("aaa", currentWeatherResponse.getName());
+                        for (WeatherItem item: currentWeatherResponse.getWeather())
+                          Log.d("aaa_item", item.getDescription());
+                        binding.swipeContainer.setRefreshing(false);
+                      }
+
+                      @Override
+                      public void onError(Throwable e) {
+                        binding.swipeContainer.setRefreshing(false);
+                        try {
+                          HttpException error = (HttpException) e;
+                          handleErrorCode(error);
+                        } catch (Exception exception) {
+                          e.printStackTrace();
+                        }
+                      }
+                    })
+
+    );
+  }
+
 
   private void handleErrorCode(HttpException error) {
     if (error.code() == 404) {
