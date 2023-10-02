@@ -227,7 +227,7 @@ public class MainActivity extends BaseActivity {
 
     private void initRecyclerViewMultipleDays() {
         LinearLayoutManager layoutManager
-                = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+                = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         binding.contentMainLayout.recyclerViewToday.setLayoutManager(layoutManager);
         mItemAdapterMultipleDays = new ItemAdapter<>();
         mFastAdapterMultipleDays = FastAdapter.with(mItemAdapterMultipleDays);
