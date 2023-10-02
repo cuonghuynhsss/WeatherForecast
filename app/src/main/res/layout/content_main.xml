@@ -159,6 +159,17 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal" />
 
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Next half month"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:textColor="#ffffff" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="@dimen/spacing_medium" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_view_today"
                 android:layout_width="match_parent"

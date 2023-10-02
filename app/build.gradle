@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 apply plugin: 'io.objectbox'
 
-File googleServicesFile = rootProject.file("app/google-services.json")
-if (googleServicesFile.exists()) {
-    System.out.println("Google Service File Exist")
-    apply plugin: 'com.google.gms.google-services'
-    apply plugin: 'com.google.firebase.crashlytics'
-}
+//File googleServicesFile = rootProject.file("app/google-services.json")
+//if (googleServicesFile.exists()) {
+//    System.out.println("Google Service File Exist")
+//    apply plugin: 'com.google.gms.google-services'
+//    apply plugin: 'com.google.firebase.crashlytics'
+//}
 
 
 def versionMajor = 2
