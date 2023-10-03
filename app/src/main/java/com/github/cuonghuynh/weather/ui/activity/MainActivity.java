@@ -199,6 +199,7 @@ public class MainActivity extends BaseActivity {
         binding.btnSearch.setOnClickListener(v->{
             final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             SearchFragment searchFragment = new SearchFragment();
+            transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
             transaction.replace(R.id.frame_nav, searchFragment);
             transaction.addToBackStack(null);
             transaction.commit();
@@ -207,6 +208,7 @@ public class MainActivity extends BaseActivity {
         binding.btnSetting.setOnClickListener(v->{
             final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             SettingFragment settingFragment = new SettingFragment();
+            transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
             transaction.replace(R.id.frame_nav, settingFragment);
             transaction.addToBackStack(null);
             transaction.commit();
@@ -217,6 +219,7 @@ public class MainActivity extends BaseActivity {
             MapFragment mapFragment = new MapFragment();
             transaction.replace(R.id.frame_nav, mapFragment);
             transaction.addToBackStack(null);
+            transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
             transaction.commit();
             binding.contentMainLayout.getRoot().setVisibility(View.GONE);
         });
