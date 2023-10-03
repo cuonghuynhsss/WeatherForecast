@@ -21,12 +21,20 @@
             android:id="@+id/contentEmptyLayout"
             layout="@layout/content_empty" />
 
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/coordinator_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <FrameLayout
+                android:id="@+id/frame_nav"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="50dp"
+                android:background="#ffffff">
 
+            </FrameLayout>
             <!--            <com.google.android.material.bottomappbar.BottomAppBar-->
             <!--                android:id="@+id/bar"-->
             <!--                android:layout_width="match_parent"-->
@@ -83,7 +91,7 @@
                         android:drawableBottom="@drawable/ic_search_alt_light" />
 
                     <Button
-                        android:id="@+id/bth_map"
+                        android:id="@+id/btn_map"
                         style="?android:attr/borderlessButtonStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"

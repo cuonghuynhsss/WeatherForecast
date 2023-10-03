@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -32,6 +33,9 @@ import com.github.cuonghuynh.weather.model.fivedayweather.FiveDayResponse;
 import com.github.cuonghuynh.weather.model.fivedayweather.ItemHourly;
 import com.github.cuonghuynh.weather.service.ApiService;
 import com.github.cuonghuynh.weather.ui.fragment.AboutFragment;
+import com.github.cuonghuynh.weather.ui.fragment.MapFragment;
+import com.github.cuonghuynh.weather.ui.fragment.SearchFragment;
+import com.github.cuonghuynh.weather.ui.fragment.SettingFragment;
 import com.github.cuonghuynh.weather.utils.ApiClient;
 import com.github.cuonghuynh.weather.utils.AppUtil;
 import com.github.cuonghuynh.weather.utils.Constants;
@@ -187,6 +191,34 @@ public class MainActivity extends BaseActivity {
                     startActivity(intent);
                 }
             }
+        });
+
+        binding.btnHome.setOnClickListener(v->{
+            binding.contentMainLayout.getRoot().setVisibility(View.VISIBLE);
+        });
+        binding.btnSearch.setOnClickListener(v->{
+            final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            SearchFragment searchFragment = new SearchFragment();
+            transaction.replace(R.id.frame_nav, searchFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
+            binding.contentMainLayout.getRoot().setVisibility(View.GONE);
+        });
+        binding.btnSetting.setOnClickListener(v->{
+            final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            SettingFragment settingFragment = new SettingFragment();
+            transaction.replace(R.id.frame_nav, settingFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
+            binding.contentMainLayout.getRoot().setVisibility(View.GONE);
+        });
+        binding.btnMap.setOnClickListener(v->{
+            final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            MapFragment mapFragment = new MapFragment();
+            transaction.replace(R.id.frame_nav, mapFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
+            binding.contentMainLayout.getRoot().setVisibility(View.GONE);
         });
     }
 
