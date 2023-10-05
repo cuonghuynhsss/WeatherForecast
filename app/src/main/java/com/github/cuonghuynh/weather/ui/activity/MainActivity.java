@@ -44,6 +44,7 @@ import com.github.cuonghuynh.weather.utils.MyApplication;
 import com.github.cuonghuynh.weather.utils.SnackbarUtil;
 import com.github.cuonghuynh.weather.utils.TextViewFactory;
 import com.github.pwittchen.prefser.library.rx2.Prefser;
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
@@ -71,7 +72,6 @@ public class MainActivity extends BaseActivity {
 
     private FastAdapter<FiveDayWeather> mFastAdapter;
     private ItemAdapter<FiveDayWeather> mItemAdapter;
-
     private FastAdapter<MultipleDaysWeather> mFastAdapterMultipleDays;
     private ItemAdapter<MultipleDaysWeather> mItemAdapterMultipleDays;
     private Box<MultipleDaysWeather> multipleDaysWeatherBox;
@@ -98,8 +98,8 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        //setSupportActionBar(binding.toolbarLayout.toolbar);
-        //initSearchView();
+        setSupportActionBar(binding.toolbarLayout.toolbar);
+        initSearchView();
         initValues();
         setupTextSwitchers();
         initRecyclerView();
@@ -111,31 +111,31 @@ public class MainActivity extends BaseActivity {
         checkTimePass();
     }
 
-//  private void initSearchView() {
-//    binding.toolbarLayout.searchView.setVoiceSearch(false);
-//    binding.toolbarLayout.searchView.setHint(getString(R.string.search_label));
-//    binding.toolbarLayout.searchView.setCursorDrawable(R.drawable.custom_curosr);
-//    binding.toolbarLayout.searchView.setEllipsize(true);
-//    binding.toolbarLayout.searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
-//      @Override
-//      public boolean onQueryTextSubmit(String query) {
-//        requestWeather(query, true);
-//        return false;
-//      }
-//
-//      @Override
-//      public boolean onQueryTextChange(String newText) {
-//        return false;
-//      }
-//    });
-//    binding.toolbarLayout.searchView.setOnClickListener(new View.OnClickListener() {
-//      @Override
-//      public void onClick(View v) {
-//        binding.toolbarLayout.searchView.showSearch();
-//      }
-//    });
-//
-//  }
+  private void initSearchView() {
+    binding.toolbarLayout.searchView.setVoiceSearch(false);
+    binding.toolbarLayout.searchView.setHint(getString(R.string.search_label));
+    binding.toolbarLayout.searchView.setCursorDrawable(R.drawable.custom_curosr);
+    binding.toolbarLayout.searchView.setEllipsize(true);
+    binding.toolbarLayout.searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+      @Override
+      public boolean onQueryTextSubmit(String query) {
+        requestWeather(query, true);
+        return false;
+      }
+
+      @Override
+      public boolean onQueryTextChange(String newText) {
+        return false;
+      }
+    });
+    binding.toolbarLayout.searchView.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        binding.toolbarLayout.searchView.showSearch();
+      }
+    });
+
+  }
 
     private void initValues() {
         colors = getResources().getIntArray(R.array.mdcolor_500);
@@ -336,7 +336,7 @@ public class MainActivity extends BaseActivity {
     private void checkLastUpdate() {
         cityInfo = prefser.get(Constants.CITY_INFO, CityInfo.class, null);
         if (cityInfo != null) {
-            //binding.toolbarLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
+            binding.toolbarLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
             if (prefser.contains(Constants.LAST_STORED_CURRENT)) {
                 long lastStored = prefser.get(Constants.LAST_STORED_CURRENT, Long.class, 0L);
                 if (AppUtil.isTimePass(lastStored)) {
@@ -694,7 +694,7 @@ public class MainActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         MenuItem item = menu.findItem(R.id.action_search);
-        //binding.toolbarLayout.searchView.setMenuItem(item);
+        binding.toolbarLayout.searchView.setMenuItem(item);
         return true;
     }
 
@@ -704,10 +704,10 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-//    if (binding.toolbarLayout.searchView.isSearchOpen()) {
-//      binding.toolbarLayout.searchView.closeSearch();
-//    } else {
+    if (binding.toolbarLayout.searchView.isSearchOpen()) {
+      binding.toolbarLayout.searchView.closeSearch();
+    } else {
         super.onBackPressed();
-        //}
+        }
     }
 }

@@ -15,15 +15,6 @@
         android:descendantFocusability="blocksDescendants"
         android:orientation="vertical">
 
-        <!--        <androidx.appcompat.widget.AppCompatTextView-->
-        <!--            android:layout_width="wrap_content"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:layout_gravity="center"-->
-        <!--            android:text="@string/current_label"-->
-        <!--            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"-->
-        <!--            android:textColor="@color/material_blue"-->
-        <!--            android:textStyle="bold" />-->
-
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/todayMaterialCard"
             style="@style/Widget.MaterialComponents.CardView"
