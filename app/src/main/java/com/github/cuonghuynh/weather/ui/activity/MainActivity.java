@@ -2,6 +2,8 @@ package com.github.cuonghuynh.weather.ui.activity;
 
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.icu.text.SimpleDateFormat;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -12,7 +14,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -43,6 +47,7 @@ import com.github.cuonghuynh.weather.utils.DbUtil;
 import com.github.cuonghuynh.weather.utils.MyApplication;
 import com.github.cuonghuynh.weather.utils.SnackbarUtil;
 import com.github.cuonghuynh.weather.utils.TextViewFactory;
+import com.github.cuonghuynh.weather.viewmodel.WeatherViewModel;
 import com.github.pwittchen.prefser.library.rx2.Prefser;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.mikepenz.fastadapter.FastAdapter;
@@ -52,8 +57,10 @@ import com.mikepenz.fastadapter.listeners.OnClickListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.TimeZone;
 
 import io.objectbox.Box;
@@ -92,11 +99,15 @@ public class MainActivity extends BaseActivity {
     private ActivityMainBinding binding;
     private int[] colors;
     private int[] colorsAlpha;
+    private WeatherViewModel weatherViewModel;
+    private Date currentTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
+        initViewModel();
+        initObserve();
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbarLayout.toolbar);
         initSearchView();
@@ -111,31 +122,71 @@ public class MainActivity extends BaseActivity {
         checkTimePass();
     }
 
-  private void initSearchView() {
-    binding.toolbarLayout.searchView.setVoiceSearch(false);
-    binding.toolbarLayout.searchView.setHint(getString(R.string.search_label));
-    binding.toolbarLayout.searchView.setCursorDrawable(R.drawable.custom_curosr);
-    binding.toolbarLayout.searchView.setEllipsize(true);
-    binding.toolbarLayout.searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
-      @Override
-      public boolean onQueryTextSubmit(String query) {
-        requestWeather(query, true);
-        return false;
-      }
+    private void initViewModel() {
+        weatherViewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
+        weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_HOME_ID);
+        weatherViewModel.getNavigationIdSelected().observe(this, navCurrent -> {
+            switch (navCurrent) {
+                case 1:
+                    binding.btnHome.setImageResource(R.drawable.ic_home_light);
+                    binding.btnChat.setImageResource(R.drawable.chatbot__1_);
+                    binding.btnMap.setImageResource(R.drawable.ic_map);
+                    binding.btnSetting.setImageResource(R.drawable.ic_setting);
+                    return;
+                case 2:
+                    binding.btnHome.setImageResource(R.drawable.ic_home);
+                    binding.btnChat.setImageResource(R.drawable.ic_chatbot_live);
+                    binding.btnMap.setImageResource(R.drawable.ic_map);
+                    binding.btnSetting.setImageResource(R.drawable.ic_setting);
+                    return;
+                case 3:
+                    binding.btnHome.setImageResource(R.drawable.ic_home);
+                    binding.btnChat.setImageResource(R.drawable.chatbot__1_);
+                    binding.btnMap.setImageResource(R.drawable.ic_map_light_);
+                    binding.btnSetting.setImageResource(R.drawable.ic_setting);
+                    return;
+                case 4:
+                    binding.btnHome.setImageResource(R.drawable.ic_home);
+                    binding.btnChat.setImageResource(R.drawable.chatbot__1_);
+                    binding.btnMap.setImageResource(R.drawable.ic_map);
+                    binding.btnSetting.setImageResource(R.drawable.ic_setting_light);
+                    return;
+                default:
+                    return;
 
-      @Override
-      public boolean onQueryTextChange(String newText) {
-        return false;
-      }
-    });
-    binding.toolbarLayout.searchView.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        binding.toolbarLayout.searchView.showSearch();
-      }
-    });
+            }
+        });
+    }
 
-  }
+    private void initObserve() {
+
+    }
+
+    private void initSearchView() {
+        binding.toolbarLayout.searchView.setVoiceSearch(false);
+        binding.toolbarLayout.searchView.setHint(getString(R.string.search_label));
+        binding.toolbarLayout.searchView.setCursorDrawable(R.drawable.custom_curosr);
+        binding.toolbarLayout.searchView.setEllipsize(true);
+        binding.toolbarLayout.searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                requestWeather(query, true);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+        binding.toolbarLayout.searchView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                binding.toolbarLayout.searchView.showSearch();
+            }
+        });
+
+    }
 
     private void initValues() {
         colors = getResources().getIntArray(R.array.mdcolor_500);
@@ -193,35 +244,48 @@ public class MainActivity extends BaseActivity {
             }
         });
 
-        binding.btnHome.setOnClickListener(v->{
-            binding.contentMainLayout.getRoot().setVisibility(View.VISIBLE);
+        binding.btnHome.setOnClickListener(v -> {
+            if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_HOME_ID)) {
+                weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_HOME_ID);
+                binding.contentMainLayout.getRoot().setVisibility(View.VISIBLE);
+            }
         });
-        binding.btnSearch.setOnClickListener(v->{
-            final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            SearchFragment searchFragment = new SearchFragment();
-            transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
-            transaction.replace(R.id.frame_nav, searchFragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
-            binding.contentMainLayout.getRoot().setVisibility(View.GONE);
+        binding.btnChat.setOnClickListener(v -> {
+            if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_CHAT_ID)) {
+                weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_CHAT_ID);
+                final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                SearchFragment searchFragment = new SearchFragment();
+                transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
+                transaction.replace(R.id.frame_nav, searchFragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+                binding.contentMainLayout.getRoot().setVisibility(View.GONE);
+            }
+
         });
-        binding.btnSetting.setOnClickListener(v->{
-            final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            SettingFragment settingFragment = new SettingFragment();
-            transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
-            transaction.replace(R.id.frame_nav, settingFragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
-            binding.contentMainLayout.getRoot().setVisibility(View.GONE);
+        binding.btnSetting.setOnClickListener(v -> {
+            if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_SETTING_ID)) {
+                weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_SETTING_ID);
+                final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                SettingFragment settingFragment = new SettingFragment();
+                transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
+                transaction.replace(R.id.frame_nav, settingFragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+                binding.contentMainLayout.getRoot().setVisibility(View.GONE);
+            }
         });
-        binding.btnMap.setOnClickListener(v->{
-            final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            MapFragment mapFragment = new MapFragment();
-            transaction.replace(R.id.frame_nav, mapFragment);
-            transaction.addToBackStack(null);
-            transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
-            transaction.commit();
-            binding.contentMainLayout.getRoot().setVisibility(View.GONE);
+        binding.btnMap.setOnClickListener(v -> {
+            if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_MAP_ID)) {
+                weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_MAP_ID);
+                final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                MapFragment mapFragment = new MapFragment();
+                transaction.replace(R.id.frame_nav, mapFragment);
+                transaction.addToBackStack(null);
+                transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
+                transaction.commit();
+                binding.contentMainLayout.getRoot().setVisibility(View.GONE);
+            }
         });
     }
 
@@ -238,6 +302,12 @@ public class MainActivity extends BaseActivity {
         binding.contentMainLayout.windTextView.setFactory(new TextViewFactory(MainActivity.this, R.style.WindSpeedTextView, false, typeface));
         binding.contentMainLayout.windTextView.setInAnimation(MainActivity.this, R.anim.slide_in_bottom);
         binding.contentMainLayout.windTextView.setOutAnimation(MainActivity.this, R.anim.slide_out_top);
+        binding.contentMainLayout.tvLocation.setFactory(new TextViewFactory(MainActivity.this, R.style.TvLocation, false, typeface));
+        binding.contentMainLayout.tvLocation.setInAnimation(MainActivity.this, R.anim.slide_in_bottom);
+        binding.contentMainLayout.tvLocation.setOutAnimation(MainActivity.this, R.anim.slide_out_top);
+        binding.contentMainLayout.dateMaxMixTemp.setFactory(new TextViewFactory(MainActivity.this, R.style.dateMaxMixTemp, false, typeface));
+        binding.contentMainLayout.dateMaxMixTemp.setInAnimation(MainActivity.this, R.anim.slide_in_bottom);
+        binding.contentMainLayout.dateMaxMixTemp.setOutAnimation(MainActivity.this, R.anim.slide_out_top);
     }
 
     private void initRecyclerView() {
@@ -295,21 +365,30 @@ public class MainActivity extends BaseActivity {
         Query<CurrentWeather> query = DbUtil.getCurrentWeatherQuery(currentWeatherBox);
         query.subscribe(subscriptions).on(AndroidScheduler.mainThread())
                 .observer(new DataObserver<List<CurrentWeather>>() {
+                    @RequiresApi(api = Build.VERSION_CODES.N)
                     @Override
                     public void onData(@NonNull List<CurrentWeather> data) {
                         if (data.size() > 0) {
                             hideEmptyLayout();
+                            Date d = Calendar.getInstance().getTime();
+                            SimpleDateFormat df = new SimpleDateFormat("dd MMM E", Locale.getDefault());
+                            String formattedDate = df.format(d);
+
                             CurrentWeather currentWeather = data.get(0);
                             if (isLoad) {
                                 binding.contentMainLayout.tempTextView.setText(String.format(Locale.getDefault(), "%.0f°", currentWeather.getTemp()));
                                 binding.contentMainLayout.descriptionTextView.setText(AppUtil.getWeatherStatus(currentWeather.getWeatherId(), AppUtil.isRTL(MainActivity.this)));
                                 binding.contentMainLayout.humidityTextView.setText(String.format(Locale.getDefault(), "%d%%", currentWeather.getHumidity()));
                                 binding.contentMainLayout.windTextView.setText(String.format(Locale.getDefault(), getResources().getString(R.string.wind_unit_label), currentWeather.getWindSpeed()));
+                                binding.contentMainLayout.tvLocation.setText(weatherViewModel.getCityInfoCurrent().getValue().getName());
+                                binding.contentMainLayout.dateMaxMixTemp.setText(formattedDate);
                             } else {
                                 binding.contentMainLayout.tempTextView.setCurrentText(String.format(Locale.getDefault(), "%.0f°", currentWeather.getTemp()));
                                 binding.contentMainLayout.descriptionTextView.setCurrentText(AppUtil.getWeatherStatus(currentWeather.getWeatherId(), AppUtil.isRTL(MainActivity.this)));
                                 binding.contentMainLayout.humidityTextView.setCurrentText(String.format(Locale.getDefault(), "%d%%", currentWeather.getHumidity()));
                                 binding.contentMainLayout.windTextView.setCurrentText(String.format(Locale.getDefault(), getResources().getString(R.string.wind_unit_label), currentWeather.getWindSpeed()));
+                                binding.contentMainLayout.tvLocation.setCurrentText(weatherViewModel.getCityInfoCurrent().getValue().getName());
+                                binding.contentMainLayout.dateMaxMixTemp.setCurrentText(formattedDate);
                             }
                             binding.contentMainLayout.animationView.setAnimation(AppUtil.getWeatherAnimation(currentWeather.getWeatherId()));
                             binding.contentMainLayout.animationView.playAnimation();
@@ -336,6 +415,7 @@ public class MainActivity extends BaseActivity {
     private void checkLastUpdate() {
         cityInfo = prefser.get(Constants.CITY_INFO, CityInfo.class, null);
         if (cityInfo != null) {
+            weatherViewModel.setCityInfoCurrent(cityInfo);
             binding.toolbarLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
             if (prefser.contains(Constants.LAST_STORED_CURRENT)) {
                 long lastStored = prefser.get(Constants.LAST_STORED_CURRENT, Long.class, 0L);
@@ -586,7 +666,8 @@ public class MainActivity extends BaseActivity {
         cityInfo.setId(response.getId());
         cityInfo.setName(response.getName());
         prefser.put(Constants.CITY_INFO, cityInfo);
-        //binding.toolbarLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
+        weatherViewModel.setCityInfoCurrent(cityInfo);
+        binding.toolbarLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
     }
 
     private void getFiveDaysWeather(String cityName) {
@@ -704,10 +785,10 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-    if (binding.toolbarLayout.searchView.isSearchOpen()) {
-      binding.toolbarLayout.searchView.closeSearch();
-    } else {
-        super.onBackPressed();
+        if (binding.toolbarLayout.searchView.isSearchOpen()) {
+            binding.toolbarLayout.searchView.closeSearch();
+        } else {
+            super.onBackPressed();
         }
     }
 }

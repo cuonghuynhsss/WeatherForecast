@@ -1,6 +1,10 @@
 package com.github.cuonghuynh.weather.utils;
 
 public class Constants {
+  public static final Integer NAVIGATION_HOME_ID = 1;
+  public static final Integer NAVIGATION_CHAT_ID = 2;
+  public static final Integer NAVIGATION_MAP_ID = 3;
+  public static final Integer NAVIGATION_SETTING_ID = 4;
   public static final String BASE_URL = "https://api.openweathermap.org/data/2.5/";
   public static final String UNITS = "metric";
   public static final String[] DAYS_OF_WEEK = {

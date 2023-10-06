@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/swipe_container"
@@ -13,9 +14,9 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-                <include
-                    android:id="@+id/toolbarLayout"
-                    layout="@layout/toolbar" />
+        <include
+            android:id="@+id/toolbarLayout"
+            layout="@layout/toolbar" />
 
         <include
             android:id="@+id/contentEmptyLayout"
@@ -74,37 +75,37 @@
                     android:gravity="center"
                     android:orientation="horizontal">
 
-                    <Button
+                    <ImageView
                         android:id="@+id/btn_home"
                         style="?android:attr/borderlessButtonStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_marginEnd="10dp"
-                        android:drawableBottom="@drawable/ic_home" />
+                        android:src="@drawable/ic_home" />
 
-                    <Button
-                        android:id="@+id/btn_search"
+                    <ImageView
+                        android:id="@+id/btn_chat"
                         style="?android:attr/borderlessButtonStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_marginEnd="10dp"
-                        android:drawableBottom="@drawable/ic_search_alt_light" />
+                        android:src="@drawable/ic_bubble_chat" />
 
-                    <Button
+                    <ImageView
                         android:id="@+id/btn_map"
                         style="?android:attr/borderlessButtonStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_marginStart="10dp"
-                        android:drawableBottom="@drawable/ic_compass_light" />
+                        android:src="@drawable/ic_compass_light" />
 
-                    <Button
+                    <ImageView
                         android:id="@+id/btn_setting"
                         style="?android:attr/borderlessButtonStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_marginStart="10dp"
-                        android:drawableBottom="@drawable/ic_setting_alt_line" />
+                        android:src="@drawable/ic_setting_alt_line" />
                 </LinearLayout>
             </com.google.android.material.bottomnavigation.BottomNavigationView>
         </androidx.constraintlayout.widget.ConstraintLayout>

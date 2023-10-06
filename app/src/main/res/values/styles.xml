@@ -12,8 +12,19 @@
         <item name="android:tint">@android:color/white</item>
     </style>
 
+    <style name="TvLocation">
+        <item name="android:textSize">28sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/grey_10</item>
+    </style>
+
+    <style name="dateMaxMixTemp">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/grey_10</item>
+    </style>
+
     <style name="TempTextView">
-        <item name="android:textSize">70sp</item>
+        <item name="android:textSize">36sp</item>
         <item name="android:textColor">@color/grey_10</item>
     </style>
 
