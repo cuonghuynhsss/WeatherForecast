@@ -109,7 +109,7 @@ public class MainActivity extends BaseActivity {
         initViewModel();
         initObserve();
         setContentView(binding.getRoot());
-        setSupportActionBar(binding.toolbarLayout.toolbar);
+        setSupportActionBar(binding.contentMainLayout.toolbar);
         initSearchView();
         initValues();
         setupTextSwitchers();
@@ -163,11 +163,11 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initSearchView() {
-        binding.toolbarLayout.searchView.setVoiceSearch(false);
-        binding.toolbarLayout.searchView.setHint(getString(R.string.search_label));
-        binding.toolbarLayout.searchView.setCursorDrawable(R.drawable.custom_curosr);
-        binding.toolbarLayout.searchView.setEllipsize(true);
-        binding.toolbarLayout.searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+        binding.contentMainLayout.searchView.setVoiceSearch(false);
+        binding.contentMainLayout.searchView.setHint(getString(R.string.search_label));
+        binding.contentMainLayout.searchView.setCursorDrawable(R.drawable.custom_curosr);
+        binding.contentMainLayout.searchView.setEllipsize(true);
+        binding.contentMainLayout.searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 requestWeather(query, true);
@@ -179,10 +179,11 @@ public class MainActivity extends BaseActivity {
                 return false;
             }
         });
-        binding.toolbarLayout.searchView.setOnClickListener(new View.OnClickListener() {
+        binding.contentMainLayout.searchView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                binding.toolbarLayout.searchView.showSearch();
+                binding.contentMainLayout.searchView.showSearch();
+                binding.contentMainLayout.searchView.requestFocus();
             }
         });
 
@@ -376,14 +377,14 @@ public class MainActivity extends BaseActivity {
 
                             CurrentWeather currentWeather = data.get(0);
                             if (isLoad) {
-                                binding.contentMainLayout.tempTextView.setText(String.format(Locale.getDefault(), "%.0f°", currentWeather.getTemp()));
+                                binding.contentMainLayout.tempTextView.setText(String.format(Locale.getDefault(), "%.0f°C", currentWeather.getTemp()));
                                 binding.contentMainLayout.descriptionTextView.setText(AppUtil.getWeatherStatus(currentWeather.getWeatherId(), AppUtil.isRTL(MainActivity.this)));
                                 binding.contentMainLayout.humidityTextView.setText(String.format(Locale.getDefault(), "%d%%", currentWeather.getHumidity()));
                                 binding.contentMainLayout.windTextView.setText(String.format(Locale.getDefault(), getResources().getString(R.string.wind_unit_label), currentWeather.getWindSpeed()));
                                 binding.contentMainLayout.tvLocation.setText(weatherViewModel.getCityInfoCurrent().getValue().getName());
                                 binding.contentMainLayout.dateMaxMixTemp.setText(formattedDate);
                             } else {
-                                binding.contentMainLayout.tempTextView.setCurrentText(String.format(Locale.getDefault(), "%.0f°", currentWeather.getTemp()));
+                                binding.contentMainLayout.tempTextView.setCurrentText(String.format(Locale.getDefault(), "%.0f°C", currentWeather.getTemp()));
                                 binding.contentMainLayout.descriptionTextView.setCurrentText(AppUtil.getWeatherStatus(currentWeather.getWeatherId(), AppUtil.isRTL(MainActivity.this)));
                                 binding.contentMainLayout.humidityTextView.setCurrentText(String.format(Locale.getDefault(), "%d%%", currentWeather.getHumidity()));
                                 binding.contentMainLayout.windTextView.setCurrentText(String.format(Locale.getDefault(), getResources().getString(R.string.wind_unit_label), currentWeather.getWindSpeed()));
@@ -416,7 +417,7 @@ public class MainActivity extends BaseActivity {
         cityInfo = prefser.get(Constants.CITY_INFO, CityInfo.class, null);
         if (cityInfo != null) {
             weatherViewModel.setCityInfoCurrent(cityInfo);
-            binding.toolbarLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
+            //binding.contentMainLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
             if (prefser.contains(Constants.LAST_STORED_CURRENT)) {
                 long lastStored = prefser.get(Constants.LAST_STORED_CURRENT, Long.class, 0L);
                 if (AppUtil.isTimePass(lastStored)) {
@@ -667,7 +668,7 @@ public class MainActivity extends BaseActivity {
         cityInfo.setName(response.getName());
         prefser.put(Constants.CITY_INFO, cityInfo);
         weatherViewModel.setCityInfoCurrent(cityInfo);
-        binding.toolbarLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
+        //binding.toolbarLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
     }
 
     private void getFiveDaysWeather(String cityName) {
@@ -775,7 +776,7 @@ public class MainActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         MenuItem item = menu.findItem(R.id.action_search);
-        binding.toolbarLayout.searchView.setMenuItem(item);
+        binding.contentMainLayout.searchView.setMenuItem(item);
         return true;
     }
 
@@ -785,8 +786,8 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        if (binding.toolbarLayout.searchView.isSearchOpen()) {
-            binding.toolbarLayout.searchView.closeSearch();
+        if (binding.contentMainLayout.searchView.isSearchOpen()) {
+            binding.contentMainLayout.searchView.closeSearch();
         } else {
             super.onBackPressed();
         }
