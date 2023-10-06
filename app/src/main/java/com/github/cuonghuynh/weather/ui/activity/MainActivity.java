@@ -109,7 +109,7 @@ public class MainActivity extends BaseActivity {
         initViewModel();
         initObserve();
         setContentView(binding.getRoot());
-        setSupportActionBar(binding.contentMainLayout.toolbar);
+        setSupportActionBar(binding.toolbarLayout.toolbar);
         initSearchView();
         initValues();
         setupTextSwitchers();
@@ -163,11 +163,11 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initSearchView() {
-        binding.contentMainLayout.searchView.setVoiceSearch(false);
-        binding.contentMainLayout.searchView.setHint(getString(R.string.search_label));
-        binding.contentMainLayout.searchView.setCursorDrawable(R.drawable.custom_curosr);
-        binding.contentMainLayout.searchView.setEllipsize(true);
-        binding.contentMainLayout.searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+        binding.toolbarLayout.searchView.setVoiceSearch(false);
+        binding.toolbarLayout.searchView.setHint(getString(R.string.search_label));
+        binding.toolbarLayout.searchView.setCursorDrawable(R.drawable.custom_curosr);
+        binding.toolbarLayout.searchView.setEllipsize(true);
+        binding.toolbarLayout.searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 requestWeather(query, true);
@@ -179,11 +179,10 @@ public class MainActivity extends BaseActivity {
                 return false;
             }
         });
-        binding.contentMainLayout.searchView.setOnClickListener(new View.OnClickListener() {
+        binding.toolbarLayout.searchView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                binding.contentMainLayout.searchView.showSearch();
-                binding.contentMainLayout.searchView.requestFocus();
+                binding.toolbarLayout.searchView.showSearch();
             }
         });
 
@@ -417,7 +416,7 @@ public class MainActivity extends BaseActivity {
         cityInfo = prefser.get(Constants.CITY_INFO, CityInfo.class, null);
         if (cityInfo != null) {
             weatherViewModel.setCityInfoCurrent(cityInfo);
-            //binding.contentMainLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
+            binding.toolbarLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
             if (prefser.contains(Constants.LAST_STORED_CURRENT)) {
                 long lastStored = prefser.get(Constants.LAST_STORED_CURRENT, Long.class, 0L);
                 if (AppUtil.isTimePass(lastStored)) {
@@ -668,7 +667,7 @@ public class MainActivity extends BaseActivity {
         cityInfo.setName(response.getName());
         prefser.put(Constants.CITY_INFO, cityInfo);
         weatherViewModel.setCityInfoCurrent(cityInfo);
-        //binding.toolbarLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
+        binding.toolbarLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
     }
 
     private void getFiveDaysWeather(String cityName) {
@@ -776,7 +775,7 @@ public class MainActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         MenuItem item = menu.findItem(R.id.action_search);
-        binding.contentMainLayout.searchView.setMenuItem(item);
+        binding.toolbarLayout.searchView.setMenuItem(item);
         return true;
     }
 
@@ -786,8 +785,8 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        if (binding.contentMainLayout.searchView.isSearchOpen()) {
-            binding.contentMainLayout.searchView.closeSearch();
+        if (binding.toolbarLayout.searchView.isSearchOpen()) {
+            binding.toolbarLayout.searchView.closeSearch();
         } else {
             super.onBackPressed();
         }
