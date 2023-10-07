@@ -1,5 +1,6 @@
 package com.github.cuonghuynh.weather.ui.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.icu.text.SimpleDateFormat;
@@ -10,6 +11,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -109,7 +111,7 @@ public class MainActivity extends BaseActivity {
         initViewModel();
         initObserve();
         setContentView(binding.getRoot());
-        setSupportActionBar(binding.toolbarLayout.toolbar);
+        setSupportActionBar(binding.contentMainLayout.toolbar);
         initSearchView();
         initValues();
         setupTextSwitchers();
@@ -163,11 +165,11 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initSearchView() {
-        binding.toolbarLayout.searchView.setVoiceSearch(false);
-        binding.toolbarLayout.searchView.setHint(getString(R.string.search_label));
-        binding.toolbarLayout.searchView.setCursorDrawable(R.drawable.custom_curosr);
-        binding.toolbarLayout.searchView.setEllipsize(true);
-        binding.toolbarLayout.searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+        binding.contentMainLayout.searchView.setVoiceSearch(false);
+        binding.contentMainLayout.searchView.setHint(getString(R.string.search_label));
+        binding.contentMainLayout.searchView.setCursorDrawable(R.drawable.custom_curosr);
+        binding.contentMainLayout.searchView.setEllipsize(true);
+        binding.contentMainLayout.searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 requestWeather(query, true);
@@ -179,10 +181,10 @@ public class MainActivity extends BaseActivity {
                 return false;
             }
         });
-        binding.toolbarLayout.searchView.setOnClickListener(new View.OnClickListener() {
+        binding.contentMainLayout.searchView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                binding.toolbarLayout.searchView.showSearch();
+                binding.contentMainLayout.searchView.showSearch();
             }
         });
 
@@ -287,6 +289,38 @@ public class MainActivity extends BaseActivity {
                 binding.contentMainLayout.getRoot().setVisibility(View.GONE);
             }
         });
+//        binding.contentMainLayout.btnSearch.setOnClickListener(v -> {
+//            if (binding.contentMainLayout.etSearch.getVisibility()==View.VISIBLE){
+//                binding.contentMainLayout.etSearch.setText("");
+//                binding.contentMainLayout.etSearch.setVisibility(View.INVISIBLE);
+//                closeKeyboard();
+//            } else {
+//                showKeyboard();
+//                binding.contentMainLayout.etSearch.requestFocus();
+//                binding.contentMainLayout.etSearch.setVisibility(View.VISIBLE);
+//            }
+//            if(!binding.contentMainLayout.etSearch.isFocusable()){
+//                binding.contentMainLayout.etSearch.setFocusable(true);
+//                //binding.contentMainLayout.etSearch
+//                binding.contentMainLayout.etSearch.setVisibility(View.VISIBLE);
+//                binding.contentMainLayout.etSearch.foc;
+//                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+//                imm.showSoftInput(binding.contentMainLayout.etSearch, InputMethodManager.SHOW_IMPLICIT);
+//            } else {
+//                binding.contentMainLayout.etSearch.setFocusable(false);
+//                binding.contentMainLayout.etSearch.setVisibility(View.GONE);
+//            }
+//        });
+    }
+
+    public void showKeyboard(){
+        InputMethodManager inputMethodManager = (InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+    }
+
+    public void closeKeyboard(){
+        InputMethodManager inputMethodManager = (InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
     }
 
     private void setupTextSwitchers() {
@@ -416,7 +450,7 @@ public class MainActivity extends BaseActivity {
         cityInfo = prefser.get(Constants.CITY_INFO, CityInfo.class, null);
         if (cityInfo != null) {
             weatherViewModel.setCityInfoCurrent(cityInfo);
-            binding.toolbarLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
+            //binding.contentMainLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
             if (prefser.contains(Constants.LAST_STORED_CURRENT)) {
                 long lastStored = prefser.get(Constants.LAST_STORED_CURRENT, Long.class, 0L);
                 if (AppUtil.isTimePass(lastStored)) {
@@ -667,7 +701,7 @@ public class MainActivity extends BaseActivity {
         cityInfo.setName(response.getName());
         prefser.put(Constants.CITY_INFO, cityInfo);
         weatherViewModel.setCityInfoCurrent(cityInfo);
-        binding.toolbarLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
+        //.contentMainLayout.cityNameTextView.setText(String.format("%s, %s", cityInfo.getName(), cityInfo.getCountry()));
     }
 
     private void getFiveDaysWeather(String cityName) {
@@ -775,7 +809,7 @@ public class MainActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         MenuItem item = menu.findItem(R.id.action_search);
-        binding.toolbarLayout.searchView.setMenuItem(item);
+        binding.contentMainLayout.searchView.setMenuItem(item);
         return true;
     }
 
@@ -785,8 +819,8 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        if (binding.toolbarLayout.searchView.isSearchOpen()) {
-            binding.toolbarLayout.searchView.closeSearch();
+        if (binding.contentMainLayout.searchView.isSearchOpen()) {
+            binding.contentMainLayout.searchView.closeSearch();
         } else {
             super.onBackPressed();
         }

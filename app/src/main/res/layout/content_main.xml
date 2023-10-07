@@ -12,7 +12,6 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:descendantFocusability="blocksDescendants"
         android:orientation="vertical">
 
         <com.google.android.material.card.MaterialCardView
@@ -32,6 +31,64 @@
                 android:layout_marginTop="30dp"
                 android:orientation="vertical"
                 android:paddingTop="@dimen/spacing_medium">
+
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:gravity="center"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+<!--                    <LinearLayout-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:orientation="horizontal">-->
+
+<!--                        <androidx.appcompat.widget.AppCompatTextView-->
+<!--                            android:id="@+id/city_name_text_view"-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:gravity="center"-->
+<!--                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />-->
+<!--                    </LinearLayout>-->
+                </androidx.appcompat.widget.Toolbar>
+
+                <com.miguelcatalan.materialsearchview.MaterialSearchView
+                    android:id="@+id/search_view"
+                    style="@style/MaterialSearchViewStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+<!--                <EditText-->
+<!--                    android:id="@+id/et_search"-->
+<!--                    android:layout_width="290dp"-->
+<!--                    android:layout_height="50dp"-->
+<!--                    android:visibility="invisible"-->
+<!--                    app:layout_constraintEnd_toStartOf="@+id/btn_search"-->
+<!--                    app:layout_constraintTop_toTopOf="@+id/btn_search" />-->
+
+<!--                <ImageView-->
+<!--                    android:id="@+id/btn_ping_location"-->
+<!--                    android:layout_width="20dp"-->
+<!--                    android:layout_height="50dp"-->
+<!--                    android:layout_marginTop="10dp"-->
+<!--                    android:layout_marginEnd="20dp"-->
+<!--                    app:layout_constraintEnd_toEndOf="parent"-->
+<!--                    app:layout_constraintTop_toTopOf="parent"-->
+<!--                    android:src="@drawable/location_dot_solid"/>-->
+
+<!--                <ImageView-->
+<!--                    android:id="@+id/btn_search"-->
+<!--                    android:layout_width="50dp"-->
+<!--                    android:layout_height="50dp"-->
+<!--                    android:layout_marginTop="12dp"-->
+<!--                    android:layout_marginEnd="24dp"-->
+<!--                    android:src="@drawable/ic_search_alt_light"-->
+<!--                    app:layout_constraintEnd_toStartOf="@+id/btn_ping_location"-->
+<!--                    app:layout_constraintTop_toTopOf="parent" />-->
 
                 <TextSwitcher
                     android:id="@+id/temp_text_view"
