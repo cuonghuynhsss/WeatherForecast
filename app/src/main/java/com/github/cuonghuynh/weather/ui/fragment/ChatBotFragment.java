@@ -14,7 +14,7 @@ import com.github.cuonghuynh.weather.R;
  * Use the  factory method to
  * create an instance of this fragment.
  */
-public class SearchFragment extends Fragment {
+public class ChatBotFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -26,6 +26,6 @@ public class SearchFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_search, container, false);
+        return inflater.inflate(R.layout.fragment_chat_bot, container, false);
     }
 }

@@ -1,29 +1,37 @@
 package com.github.cuonghuynh.weather.ui.activity;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.icu.text.SimpleDateFormat;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.bumptech.glide.Glide;
 import com.github.cuonghuynh.weather.R;
 import com.github.cuonghuynh.weather.databinding.ActivityMainBinding;
 import com.github.cuonghuynh.weather.model.CityInfo;
@@ -40,7 +48,7 @@ import com.github.cuonghuynh.weather.model.fivedayweather.ItemHourly;
 import com.github.cuonghuynh.weather.service.ApiService;
 import com.github.cuonghuynh.weather.ui.fragment.AboutFragment;
 import com.github.cuonghuynh.weather.ui.fragment.MapFragment;
-import com.github.cuonghuynh.weather.ui.fragment.SearchFragment;
+import com.github.cuonghuynh.weather.ui.fragment.ChatBotFragment;
 import com.github.cuonghuynh.weather.ui.fragment.SettingFragment;
 import com.github.cuonghuynh.weather.utils.ApiClient;
 import com.github.cuonghuynh.weather.utils.AppUtil;
@@ -103,15 +111,21 @@ public class MainActivity extends BaseActivity {
     private int[] colorsAlpha;
     private WeatherViewModel weatherViewModel;
     private Date currentTime;
+    private static final int REQUEST_LOCATION = 1;
+    LocationManager locationManager;
+    String latitude, longitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+
         initViewModel();
         initObserve();
         setContentView(binding.getRoot());
         setSupportActionBar(binding.contentMainLayout.toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         initSearchView();
         initValues();
         setupTextSwitchers();
@@ -122,11 +136,48 @@ public class MainActivity extends BaseActivity {
         showStoredMultipleDaysWeather();
         checkLastUpdate();
         checkTimePass();
+        Log.d("ssss", String.valueOf(binding.contentMainLayout.getRoot().getVisibility()));
     }
+
+    private void OnGPS() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            }
+        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    private void getLocation() {
+        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+        } else {
+            Location locationGPS = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (locationGPS != null) {
+                double lat = locationGPS.getLatitude();
+                double longi = locationGPS.getLongitude();
+                latitude = String.valueOf(lat);
+                longitude = String.valueOf(longi);
+                Log.d("aaaa", "Your Location: " + "                        " + "Latitude: " + latitude + "                " + "Longitude: " + longitude);
+            } else {
+                Toast.makeText(this, "Unable to find location.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 
     private void initViewModel() {
         weatherViewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
         weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_HOME_ID);
+        binding.contentMainLayout.getRoot().setVisibility(View.VISIBLE);
         weatherViewModel.getNavigationIdSelected().observe(this, navCurrent -> {
             switch (navCurrent) {
                 case 1:
@@ -200,10 +251,7 @@ public class MainActivity extends BaseActivity {
         fiveDayWeatherBox = boxStore.boxFor(FiveDayWeather.class);
         itemHourlyDBBox = boxStore.boxFor(ItemHourlyDB.class);
         multipleDaysWeatherBox = boxStore.boxFor(MultipleDaysWeather.class);
-        binding.swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
-                android.R.color.holo_green_light,
-                android.R.color.holo_orange_light,
-                android.R.color.holo_red_light);
+        binding.swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light, android.R.color.holo_orange_light, android.R.color.holo_red_light);
         binding.swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 
             @Override
@@ -250,45 +298,96 @@ public class MainActivity extends BaseActivity {
             if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_HOME_ID)) {
                 weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_HOME_ID);
                 binding.contentMainLayout.getRoot().setVisibility(View.VISIBLE);
+                //view.setVisibility(View.VISIBLE);
+                TranslateAnimation animate = new TranslateAnimation(-binding.contentMainLayout.getRoot().getWidth(), 0, 0, 0);
+                // duration of animation
+                animate.setDuration(500);
+                animate.setFillAfter(true);
+                binding.contentMainLayout.getRoot().startAnimation(animate);
             }
         });
         binding.btnChat.setOnClickListener(v -> {
             if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_CHAT_ID)) {
-                weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_CHAT_ID);
                 final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                SearchFragment searchFragment = new SearchFragment();
-                transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
-                transaction.replace(R.id.frame_nav, searchFragment);
+                ChatBotFragment chatBotFragment = new ChatBotFragment();
+                if (weatherViewModel.getNavigationIdSelected().getValue().equals(Constants.NAVIGATION_HOME_ID)){
+                    transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
+                } else {
+                    transaction.setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right);
+                }
+                transaction.replace(R.id.frame_nav, chatBotFragment).setReorderingAllowed(true);
                 transaction.addToBackStack(null);
                 transaction.commit();
                 binding.contentMainLayout.getRoot().setVisibility(View.GONE);
+                if (weatherViewModel.getNavigationIdSelected().getValue().equals(Constants.NAVIGATION_HOME_ID)) {
+                    binding.contentMainLayout.getRoot().setVisibility(View.INVISIBLE);
+                    TranslateAnimation animate = new TranslateAnimation(0, -binding.contentMainLayout.getRoot().getWidth(), 0, 0);
+                    animate.setDuration(500);
+                    binding.contentMainLayout.getRoot().startAnimation(animate);
+                }
+                weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_CHAT_ID);
             }
 
         });
-        binding.btnSetting.setOnClickListener(v -> {
-            if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_SETTING_ID)) {
-                weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_SETTING_ID);
-                final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                SettingFragment settingFragment = new SettingFragment();
-                transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
-                transaction.replace(R.id.frame_nav, settingFragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
-                binding.contentMainLayout.getRoot().setVisibility(View.GONE);
-            }
-        });
+
         binding.btnMap.setOnClickListener(v -> {
             if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_MAP_ID)) {
-                weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_MAP_ID);
                 final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 MapFragment mapFragment = new MapFragment();
-                transaction.replace(R.id.frame_nav, mapFragment);
+                locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    OnGPS();
+                } else {
+                    getLocation();
+                }
+                binding.contentMainLayout.getRoot().setVisibility(View.INVISIBLE);
+                if (weatherViewModel.getNavigationIdSelected().getValue().equals(1) || weatherViewModel.getNavigationIdSelected().getValue().equals(2)){
+                    transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
+
+                } else {
+                    transaction.setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right);
+                }
+                transaction.replace(R.id.frame_nav, mapFragment).setReorderingAllowed(true);
                 transaction.addToBackStack(null);
-                transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
                 transaction.commit();
-                binding.contentMainLayout.getRoot().setVisibility(View.GONE);
+
+
+                if (weatherViewModel.getNavigationIdSelected().getValue().equals(Constants.NAVIGATION_HOME_ID)) {
+                    TranslateAnimation animate = new TranslateAnimation(0, -binding.contentMainLayout.getRoot().getWidth(), 0, 0);
+                    animate.setDuration(500);
+                    binding.contentMainLayout.getRoot().startAnimation(animate);
+                }
+                weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_MAP_ID);
             }
         });
+
+        binding.btnSetting.setOnClickListener(v -> {
+            if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_SETTING_ID)) {
+                final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                SettingFragment settingFragment = new SettingFragment();
+                transaction.setCustomAnimations(R.anim.slide_in,  // enter
+                        R.anim.fade_out,  // exit
+                        R.anim.fade_in,   // popEnter
+                        R.anim.slide_out );
+                transaction.replace(R.id.frame_nav, settingFragment).setReorderingAllowed(true);
+                transaction.addToBackStack(null);
+                transaction.commit();
+
+                if (weatherViewModel.getNavigationIdSelected().getValue().equals(Constants.NAVIGATION_HOME_ID)) {
+                    binding.contentMainLayout.getRoot().setVisibility(View.INVISIBLE);
+                    TranslateAnimation animate = new TranslateAnimation(0, -binding.contentMainLayout.getRoot().getWidth(), 0, 0);
+                    animate.setDuration(500);
+                    binding.contentMainLayout.getRoot().startAnimation(animate);
+                }
+            }
+            weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_SETTING_ID);
+        });
+//        binding.btnMap.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//            }
+//        });
 //        binding.contentMainLayout.btnSearch.setOnClickListener(v -> {
 //            if (binding.contentMainLayout.etSearch.getVisibility()==View.VISIBLE){
 //                binding.contentMainLayout.etSearch.setText("");
@@ -313,12 +412,12 @@ public class MainActivity extends BaseActivity {
 //        });
     }
 
-    public void showKeyboard(){
+    public void showKeyboard() {
         InputMethodManager inputMethodManager = (InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
     }
 
-    public void closeKeyboard(){
+    public void closeKeyboard() {
         InputMethodManager inputMethodManager = (InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
     }
@@ -345,8 +444,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initRecyclerView() {
-        LinearLayoutManager layoutManager
-                = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         binding.contentMainLayout.recyclerView.setLayoutManager(layoutManager);
         mItemAdapter = new ItemAdapter<>();
         mFastAdapter = FastAdapter.with(mItemAdapter);
@@ -365,8 +463,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initRecyclerViewMultipleDays() {
-        LinearLayoutManager layoutManager
-                = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         binding.contentMainLayout.recyclerViewToday.setLayoutManager(layoutManager);
         mItemAdapterMultipleDays = new ItemAdapter<>();
         mFastAdapterMultipleDays = FastAdapter.with(mItemAdapterMultipleDays);
@@ -376,74 +473,71 @@ public class MainActivity extends BaseActivity {
 
     private void showStoredMultipleDaysWeather() {
         Query<MultipleDaysWeather> query = DbUtil.getMultipleDaysWeatherQuery(multipleDaysWeatherBox);
-        query.subscribe().on(AndroidScheduler.mainThread())
-                .observer(new DataObserver<List<MultipleDaysWeather>>() {
-                    @Override
-                    public void onData(@NonNull List<MultipleDaysWeather> data) {
-                        if (data.size() > 0) {
-                            final Handler handler = new Handler();
-                            handler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    data.remove(0);
-                                    mItemAdapterMultipleDays.clear();
-                                    mItemAdapterMultipleDays.add(data);
-                                }
-                            }, 500);
+        query.subscribe().on(AndroidScheduler.mainThread()).observer(new DataObserver<List<MultipleDaysWeather>>() {
+            @Override
+            public void onData(@NonNull List<MultipleDaysWeather> data) {
+                if (data.size() > 0) {
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            data.remove(0);
+                            mItemAdapterMultipleDays.clear();
+                            mItemAdapterMultipleDays.add(data);
                         }
-                    }
-                });
+                    }, 500);
+                }
+            }
+        });
     }
 
     private void showStoredCurrentWeather() {
         Query<CurrentWeather> query = DbUtil.getCurrentWeatherQuery(currentWeatherBox);
-        query.subscribe(subscriptions).on(AndroidScheduler.mainThread())
-                .observer(new DataObserver<List<CurrentWeather>>() {
-                    @RequiresApi(api = Build.VERSION_CODES.N)
-                    @Override
-                    public void onData(@NonNull List<CurrentWeather> data) {
-                        if (data.size() > 0) {
-                            hideEmptyLayout();
-                            Date d = Calendar.getInstance().getTime();
-                            SimpleDateFormat df = new SimpleDateFormat("dd MMM E", Locale.getDefault());
-                            String formattedDate = df.format(d);
+        query.subscribe(subscriptions).on(AndroidScheduler.mainThread()).observer(new DataObserver<List<CurrentWeather>>() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            public void onData(@NonNull List<CurrentWeather> data) {
+                if (data.size() > 0) {
+                    hideEmptyLayout();
+                    Date d = Calendar.getInstance().getTime();
+                    SimpleDateFormat df = new SimpleDateFormat("dd MMM E", Locale.getDefault());
+                    String formattedDate = df.format(d);
 
-                            CurrentWeather currentWeather = data.get(0);
-                            if (isLoad) {
-                                binding.contentMainLayout.tempTextView.setText(String.format(Locale.getDefault(), "%.0f°C", currentWeather.getTemp()));
-                                binding.contentMainLayout.descriptionTextView.setText(AppUtil.getWeatherStatus(currentWeather.getWeatherId(), AppUtil.isRTL(MainActivity.this)));
-                                binding.contentMainLayout.humidityTextView.setText(String.format(Locale.getDefault(), "%d%%", currentWeather.getHumidity()));
-                                binding.contentMainLayout.windTextView.setText(String.format(Locale.getDefault(), getResources().getString(R.string.wind_unit_label), currentWeather.getWindSpeed()));
-                                binding.contentMainLayout.tvLocation.setText(weatherViewModel.getCityInfoCurrent().getValue().getName());
-                                binding.contentMainLayout.dateMaxMixTemp.setText(formattedDate);
-                            } else {
-                                binding.contentMainLayout.tempTextView.setCurrentText(String.format(Locale.getDefault(), "%.0f°C", currentWeather.getTemp()));
-                                binding.contentMainLayout.descriptionTextView.setCurrentText(AppUtil.getWeatherStatus(currentWeather.getWeatherId(), AppUtil.isRTL(MainActivity.this)));
-                                binding.contentMainLayout.humidityTextView.setCurrentText(String.format(Locale.getDefault(), "%d%%", currentWeather.getHumidity()));
-                                binding.contentMainLayout.windTextView.setCurrentText(String.format(Locale.getDefault(), getResources().getString(R.string.wind_unit_label), currentWeather.getWindSpeed()));
-                                binding.contentMainLayout.tvLocation.setCurrentText(weatherViewModel.getCityInfoCurrent().getValue().getName());
-                                binding.contentMainLayout.dateMaxMixTemp.setCurrentText(formattedDate);
-                            }
-                            binding.contentMainLayout.animationView.setAnimation(AppUtil.getWeatherAnimation(currentWeather.getWeatherId()));
-                            binding.contentMainLayout.animationView.playAnimation();
-                        }
+                    CurrentWeather currentWeather = data.get(0);
+                    if (isLoad) {
+                        binding.contentMainLayout.tempTextView.setText(String.format(Locale.getDefault(), "%.0f°C", currentWeather.getTemp()));
+                        binding.contentMainLayout.descriptionTextView.setText(AppUtil.getWeatherStatus(currentWeather.getWeatherId(), AppUtil.isRTL(MainActivity.this)));
+                        binding.contentMainLayout.humidityTextView.setText(String.format(Locale.getDefault(), "%d%%", currentWeather.getHumidity()));
+                        binding.contentMainLayout.windTextView.setText(String.format(Locale.getDefault(), getResources().getString(R.string.wind_unit_label), currentWeather.getWindSpeed()));
+                        binding.contentMainLayout.tvLocation.setText(weatherViewModel.getCityInfoCurrent().getValue().getName());
+                        binding.contentMainLayout.dateMaxMixTemp.setText(formattedDate);
+                    } else {
+                        binding.contentMainLayout.tempTextView.setCurrentText(String.format(Locale.getDefault(), "%.0f°C", currentWeather.getTemp()));
+                        binding.contentMainLayout.descriptionTextView.setCurrentText(AppUtil.getWeatherStatus(currentWeather.getWeatherId(), AppUtil.isRTL(MainActivity.this)));
+                        binding.contentMainLayout.humidityTextView.setCurrentText(String.format(Locale.getDefault(), "%d%%", currentWeather.getHumidity()));
+                        binding.contentMainLayout.windTextView.setCurrentText(String.format(Locale.getDefault(), getResources().getString(R.string.wind_unit_label), currentWeather.getWindSpeed()));
+                        binding.contentMainLayout.tvLocation.setCurrentText(weatherViewModel.getCityInfoCurrent().getValue().getName());
+                        binding.contentMainLayout.dateMaxMixTemp.setCurrentText(formattedDate);
                     }
-                });
+                    binding.contentMainLayout.animationView.setAnimation(AppUtil.getWeatherAnimation(currentWeather.getWeatherId()));
+                    binding.contentMainLayout.animationView.playAnimation();
+                }
+            }
+        });
     }
 
     private void showStoredFiveDayWeather() {
         Query<FiveDayWeather> query = DbUtil.getFiveDayWeatherQuery(fiveDayWeatherBox);
-        query.subscribe(subscriptions).on(AndroidScheduler.mainThread())
-                .observer(new DataObserver<List<FiveDayWeather>>() {
-                    @Override
-                    public void onData(@NonNull List<FiveDayWeather> data) {
-                        if (data.size() > 0) {
-                            todayFiveDayWeather = data.remove(0);
-                            mItemAdapter.clear();
-                            mItemAdapter.add(data);
-                        }
-                    }
-                });
+        query.subscribe(subscriptions).on(AndroidScheduler.mainThread()).observer(new DataObserver<List<FiveDayWeather>>() {
+            @Override
+            public void onData(@NonNull List<FiveDayWeather> data) {
+                if (data.size() > 0) {
+                    todayFiveDayWeather = data.remove(0);
+                    mItemAdapter.clear();
+                    mItemAdapter.add(data);
+                }
+            }
+        });
     }
 
     private void checkLastUpdate() {
@@ -497,25 +591,19 @@ public class MainActivity extends BaseActivity {
 
     private void requestWeathers(String cityName) {
         ApiService apiService = ApiClient.getClient().create(ApiService.class);
-        disposable.add(
-                apiService.getMultipleDaysWeather(
-                                cityName, Constants.UNITS, defaultLang, 16, apiKey)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(new DisposableSingleObserver<MultipleDaysWeatherResponse>() {
-                            @Override
-                            public void onSuccess(MultipleDaysWeatherResponse response) {
-                                handleMultipleDaysResponse(response);
-                                binding.swipeContainer.setRefreshing(false);
-                            }
+        disposable.add(apiService.getMultipleDaysWeather(cityName, Constants.UNITS, defaultLang, 16, apiKey).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableSingleObserver<MultipleDaysWeatherResponse>() {
+            @Override
+            public void onSuccess(MultipleDaysWeatherResponse response) {
+                handleMultipleDaysResponse(response);
+                binding.swipeContainer.setRefreshing(false);
+            }
 
-                            @Override
-                            public void onError(Throwable e) {
-                                binding.swipeContainer.setRefreshing(false);
-                                Log.e("MainActivity", "onError: " + e.getMessage());
-                            }
-                        })
-        );
+            @Override
+            public void onError(Throwable e) {
+                binding.swipeContainer.setRefreshing(false);
+                Log.e("MainActivity", "onError: " + e.getMessage());
+            }
+        }));
     }
 
     private void handleMultipleDaysResponse(MultipleDaysWeatherResponse response) {
@@ -535,83 +623,69 @@ public class MainActivity extends BaseActivity {
     private void requestWeather(String cityName, boolean isSearch) {
         if (AppUtil.isNetworkConnected()) {
             getCurrentWeather(cityName, isSearch);
-            getCurrentWeatherForLatLon(21.0282, 105.8542);
+            //getCurrentWeatherForLatLon(21.0282, 105.8542);
             getFiveDaysWeather(cityName);
         } else {
-            SnackbarUtil
-                    .with(binding.swipeContainer)
-                    .setMessage(getString(R.string.no_internet_message))
-                    .setDuration(SnackbarUtil.LENGTH_LONG)
-                    .showError();
+            SnackbarUtil.with(binding.swipeContainer).setMessage(getString(R.string.no_internet_message)).setDuration(SnackbarUtil.LENGTH_LONG).showError();
             binding.swipeContainer.setRefreshing(false);
         }
     }
 
     private void getCurrentWeather(String cityName, boolean isSearch) {
         apiKey = getResources().getString(R.string.open_weather_map_api);
-        disposable.add(
-                apiService.getCurrentWeather(
-                                cityName, Constants.UNITS, defaultLang, apiKey)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(new DisposableSingleObserver<CurrentWeatherResponse>() {
-                            @Override
-                            public void onSuccess(CurrentWeatherResponse currentWeatherResponse) {
-                                isLoad = true;
-                                storeCurrentWeather(currentWeatherResponse);
-                                storeCityInfo(currentWeatherResponse);
-                                binding.swipeContainer.setRefreshing(false);
-                                if (isSearch) {
-                                    prefser.remove(Constants.LAST_STORED_MULTIPLE_DAYS);
-                                }
-                            }
+        disposable.add(apiService.getCurrentWeather(cityName, Constants.UNITS, defaultLang, apiKey).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableSingleObserver<CurrentWeatherResponse>() {
+                    @Override
+                    public void onSuccess(CurrentWeatherResponse currentWeatherResponse) {
+                        isLoad = true;
+                        storeCurrentWeather(currentWeatherResponse);
+                        storeCityInfo(currentWeatherResponse);
+                        binding.swipeContainer.setRefreshing(false);
+                        if (isSearch) {
+                            prefser.remove(Constants.LAST_STORED_MULTIPLE_DAYS);
+                        }
+                    }
 
-                            @Override
-                            public void onError(Throwable e) {
-                                binding.swipeContainer.setRefreshing(false);
-                                try {
-                                    HttpException error = (HttpException) e;
-                                    handleErrorCode(error);
-                                } catch (Exception exception) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        })
+                    @Override
+                    public void onError(Throwable e) {
+                        binding.swipeContainer.setRefreshing(false);
+                        try {
+                            HttpException error = (HttpException) e;
+                            handleErrorCode(error);
+                        } catch (Exception exception) {
+                            e.printStackTrace();
+                        }
+                    }
+                })
 
         );
     }
 
     private void getCurrentWeatherForLatLon(double lat, double lon) {
         apiKey = getResources().getString(R.string.open_weather_map_api);
-        disposable.add(
-                apiService.getCurrentWeatherForLatLon(
-                                lat, lon, apiKey)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(new DisposableSingleObserver<CurrentWeatherResponse>() {
-                            @Override
-                            public void onSuccess(CurrentWeatherResponse currentWeatherResponse) {
-                                isLoad = true;
+        disposable.add(apiService.getCurrentWeatherForLatLon(lat, lon, apiKey).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableSingleObserver<CurrentWeatherResponse>() {
+                    @Override
+                    public void onSuccess(CurrentWeatherResponse currentWeatherResponse) {
+                        isLoad = true;
 //                        storeCurrentWeather(currentWeatherResponse);
 //                        storeCityInfo(currentWeatherResponse);
-                                Log.d("aaa", currentWeatherResponse.getBase());
-                                Log.d("aaa", currentWeatherResponse.getName());
-                                for (WeatherItem item : currentWeatherResponse.getWeather())
-                                    Log.d("aaa_item", item.getDescription());
-                                binding.swipeContainer.setRefreshing(false);
-                            }
+                        Log.d("aaa", currentWeatherResponse.getBase());
+                        Log.d("aaa", currentWeatherResponse.getName());
+                        for (WeatherItem item : currentWeatherResponse.getWeather())
+                            Log.d("aaa_item", item.getDescription());
+                        binding.swipeContainer.setRefreshing(false);
+                    }
 
-                            @Override
-                            public void onError(Throwable e) {
-                                binding.swipeContainer.setRefreshing(false);
-                                try {
-                                    HttpException error = (HttpException) e;
-                                    handleErrorCode(error);
-                                } catch (Exception exception) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        })
+                    @Override
+                    public void onError(Throwable e) {
+                        binding.swipeContainer.setRefreshing(false);
+                        try {
+                            HttpException error = (HttpException) e;
+                            handleErrorCode(error);
+                        } catch (Exception exception) {
+                            e.printStackTrace();
+                        }
+                    }
+                })
 
         );
     }
@@ -619,59 +693,44 @@ public class MainActivity extends BaseActivity {
 
     private void handleErrorCode(HttpException error) {
         if (error.code() == 404) {
-            SnackbarUtil
-                    .with(binding.swipeContainer)
-                    .setMessage(getString(R.string.no_city_found_message))
-                    .setDuration(SnackbarUtil.LENGTH_INDEFINITE)
-                    .setAction(getResources().getString(R.string.search_label), new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            //binding.toolbarLayout.searchView.showSearch();
-                        }
-                    })
-                    .showWarning();
+            SnackbarUtil.with(binding.swipeContainer).setMessage(getString(R.string.no_city_found_message)).setDuration(SnackbarUtil.LENGTH_INDEFINITE).setAction(getResources().getString(R.string.search_label), new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //binding.toolbarLayout.searchView.showSearch();
+                }
+            }).showWarning();
 
         } else if (error.code() == 401) {
-            SnackbarUtil
-                    .with(binding.swipeContainer)
-                    .setMessage(getString(R.string.invalid_api_key_message))
-                    .setDuration(SnackbarUtil.LENGTH_INDEFINITE)
-                    .setAction(getString(R.string.ok_label), new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
+            SnackbarUtil.with(binding.swipeContainer).setMessage(getString(R.string.invalid_api_key_message)).setDuration(SnackbarUtil.LENGTH_INDEFINITE).setAction(getString(R.string.ok_label), new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-                        }
-                    })
-                    .showError();
+                }
+            }).showError();
 
         } else {
-            SnackbarUtil
-                    .with(binding.swipeContainer)
-                    .setMessage(getString(R.string.network_exception_message))
-                    .setDuration(SnackbarUtil.LENGTH_LONG)
-                    .setAction(getResources().getString(R.string.retry_label), new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            if (cityInfo != null) {
-                                requestWeather(cityInfo.getName(), false);
-                            } else {
-                                //binding.toolbarLayout.searchView.showSearch();
-                            }
-                        }
-                    })
-                    .showWarning();
+            SnackbarUtil.with(binding.swipeContainer).setMessage(getString(R.string.network_exception_message)).setDuration(SnackbarUtil.LENGTH_LONG).setAction(getResources().getString(R.string.retry_label), new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (cityInfo != null) {
+                        requestWeather(cityInfo.getName(), false);
+                    } else {
+                        //binding.toolbarLayout.searchView.showSearch();
+                    }
+                }
+            }).showWarning();
         }
     }
 
     private void showEmptyLayout() {
-        Glide.with(MainActivity.this).load(R.drawable.no_city).into(binding.contentEmptyLayout.noCityImageView);
-        binding.contentEmptyLayout.emptyLayout.setVisibility(View.VISIBLE);
-        binding.contentMainLayout.nestedScrollView.setVisibility(View.GONE);
+        //Glide.with(MainActivity.this).load(R.drawable.no_city).into(binding.contentEmptyLayout.noCityImageView);
+        //binding.contentEmptyLayout.emptyLayout.setVisibility(View.VISIBLE);
+        //binding.contentMainLayout.nestedScrollView.setVisibility(View.GONE);
     }
 
     private void hideEmptyLayout() {
-        binding.contentEmptyLayout.emptyLayout.setVisibility(View.GONE);
-        binding.contentMainLayout.nestedScrollView.setVisibility(View.VISIBLE);
+        //binding.contentEmptyLayout.emptyLayout.setVisibility(View.GONE);
+        //binding.contentMainLayout.nestedScrollView.setVisibility(View.VISIBLE);
     }
 
 
@@ -705,23 +764,17 @@ public class MainActivity extends BaseActivity {
     }
 
     private void getFiveDaysWeather(String cityName) {
-        disposable.add(
-                apiService.getMultipleDaysWeather(
-                                cityName, Constants.UNITS, defaultLang, 5, apiKey)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(new DisposableSingleObserver<MultipleDaysWeatherResponse>() {
-                            @Override
-                            public void onSuccess(MultipleDaysWeatherResponse response) {
-                                handleFiveDayResponse(response, cityName);
-                            }
+        disposable.add(apiService.getMultipleDaysWeather(cityName, Constants.UNITS, defaultLang, 5, apiKey).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableSingleObserver<MultipleDaysWeatherResponse>() {
+            @Override
+            public void onSuccess(MultipleDaysWeatherResponse response) {
+                handleFiveDayResponse(response, cityName);
+            }
 
-                            @Override
-                            public void onError(Throwable e) {
-                                e.printStackTrace();
-                            }
-                        })
-        );
+            @Override
+            public void onError(Throwable e) {
+                e.printStackTrace();
+            }
+        }));
     }
 
     private void handleFiveDayResponse(MultipleDaysWeatherResponse response, String cityName) {
@@ -750,22 +803,17 @@ public class MainActivity extends BaseActivity {
     }
 
     private void getFiveDaysHourlyWeather(String cityName) {
-        disposable.add(
-                apiService.getFiveDaysWeather(
-                                cityName, Constants.UNITS, defaultLang, apiKey)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(new DisposableSingleObserver<FiveDayResponse>() {
-                            @Override
-                            public void onSuccess(FiveDayResponse response) {
-                                handleFiveDayHourlyResponse(response);
-                            }
+        disposable.add(apiService.getFiveDaysWeather(cityName, Constants.UNITS, defaultLang, apiKey).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableSingleObserver<FiveDayResponse>() {
+                    @Override
+                    public void onSuccess(FiveDayResponse response) {
+                        handleFiveDayHourlyResponse(response);
+                    }
 
-                            @Override
-                            public void onError(Throwable e) {
-                                e.printStackTrace();
-                            }
-                        })
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                    }
+                })
 
         );
     }
@@ -783,10 +831,7 @@ public class MainActivity extends BaseActivity {
             for (ItemHourly itemHourly : listItemHourlies) {
                 Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
                 calendar.setTimeInMillis(itemHourly.getDt() * 1000L);
-                if (calendar.getTimeInMillis()
-                        <= fiveDayWeather.getTimestampEnd()
-                        && calendar.getTimeInMillis()
-                        > fiveDayWeather.getTimestampStart()) {
+                if (calendar.getTimeInMillis() <= fiveDayWeather.getTimestampEnd() && calendar.getTimeInMillis() > fiveDayWeather.getTimestampStart()) {
                     ItemHourlyDB itemHourlyDB = new ItemHourlyDB();
                     itemHourlyDB.setDt(itemHourly.getDt());
                     itemHourlyDB.setFiveDayWeatherId(fiveDayWeatherId);

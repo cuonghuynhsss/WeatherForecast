@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'io.objectbox'
-
+apply plugin: 'com.google.gms.google-services'
 //File googleServicesFile = rootProject.file("app/google-services.json")
 //if (googleServicesFile.exists()) {
 //    System.out.println("Google Service File Exist")
@@ -73,11 +73,6 @@ dependencies {
 
     implementation 'io.github.inflationx:viewpump:2.0.3'
     implementation 'io.github.inflationx:calligraphy3:3.1.1'
-
-    // Add the Firebase Crashlytics SDK.
-    implementation 'com.google.firebase:firebase-crashlytics:18.2.3'
-    // Recommended: Add the Google Analytics SDK.
-    implementation 'com.google.firebase:firebase-analytics:19.0.2'
 
     implementation "android.arch.lifecycle:extensions:1.0.0"
     annotationProcessor "android.arch.lifecycle:compiler:1.0.0"

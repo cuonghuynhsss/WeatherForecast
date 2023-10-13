@@ -5,6 +5,7 @@
     android:id="@+id/nested_scroll_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     android:background="#431098"
     android:visibility="gone"
     tools:visibility="visible">
@@ -40,18 +41,18 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
 
-<!--                    <LinearLayout-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:orientation="horizontal">-->
+                    <!--                    <LinearLayout-->
+                    <!--                        android:layout_width="match_parent"-->
+                    <!--                        android:layout_height="wrap_content"-->
+                    <!--                        android:orientation="horizontal">-->
 
-<!--                        <androidx.appcompat.widget.AppCompatTextView-->
-<!--                            android:id="@+id/city_name_text_view"-->
-<!--                            android:layout_width="match_parent"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            android:gravity="center"-->
-<!--                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />-->
-<!--                    </LinearLayout>-->
+                    <!--                        <androidx.appcompat.widget.AppCompatTextView-->
+                    <!--                            android:id="@+id/city_name_text_view"-->
+                    <!--                            android:layout_width="match_parent"-->
+                    <!--                            android:layout_height="wrap_content"-->
+                    <!--                            android:gravity="center"-->
+                    <!--                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />-->
+                    <!--                    </LinearLayout>-->
                 </androidx.appcompat.widget.Toolbar>
 
                 <com.miguelcatalan.materialsearchview.MaterialSearchView
@@ -62,33 +63,33 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-<!--                <EditText-->
-<!--                    android:id="@+id/et_search"-->
-<!--                    android:layout_width="290dp"-->
-<!--                    android:layout_height="50dp"-->
-<!--                    android:visibility="invisible"-->
-<!--                    app:layout_constraintEnd_toStartOf="@+id/btn_search"-->
-<!--                    app:layout_constraintTop_toTopOf="@+id/btn_search" />-->
+                <!--                <EditText-->
+                <!--                    android:id="@+id/et_search"-->
+                <!--                    android:layout_width="290dp"-->
+                <!--                    android:layout_height="50dp"-->
+                <!--                    android:visibility="invisible"-->
+                <!--                    app:layout_constraintEnd_toStartOf="@+id/btn_search"-->
+                <!--                    app:layout_constraintTop_toTopOf="@+id/btn_search" />-->
 
-<!--                <ImageView-->
-<!--                    android:id="@+id/btn_ping_location"-->
-<!--                    android:layout_width="20dp"-->
-<!--                    android:layout_height="50dp"-->
-<!--                    android:layout_marginTop="10dp"-->
-<!--                    android:layout_marginEnd="20dp"-->
-<!--                    app:layout_constraintEnd_toEndOf="parent"-->
-<!--                    app:layout_constraintTop_toTopOf="parent"-->
-<!--                    android:src="@drawable/location_dot_solid"/>-->
+                <!--                <ImageView-->
+                <!--                    android:id="@+id/btn_ping_location"-->
+                <!--                    android:layout_width="20dp"-->
+                <!--                    android:layout_height="50dp"-->
+                <!--                    android:layout_marginTop="10dp"-->
+                <!--                    android:layout_marginEnd="20dp"-->
+                <!--                    app:layout_constraintEnd_toEndOf="parent"-->
+                <!--                    app:layout_constraintTop_toTopOf="parent"-->
+                <!--                    android:src="@drawable/location_dot_solid"/>-->
 
-<!--                <ImageView-->
-<!--                    android:id="@+id/btn_search"-->
-<!--                    android:layout_width="50dp"-->
-<!--                    android:layout_height="50dp"-->
-<!--                    android:layout_marginTop="12dp"-->
-<!--                    android:layout_marginEnd="24dp"-->
-<!--                    android:src="@drawable/ic_search_alt_light"-->
-<!--                    app:layout_constraintEnd_toStartOf="@+id/btn_ping_location"-->
-<!--                    app:layout_constraintTop_toTopOf="parent" />-->
+                <!--                <ImageView-->
+                <!--                    android:id="@+id/btn_search"-->
+                <!--                    android:layout_width="50dp"-->
+                <!--                    android:layout_height="50dp"-->
+                <!--                    android:layout_marginTop="12dp"-->
+                <!--                    android:layout_marginEnd="24dp"-->
+                <!--                    android:src="@drawable/ic_search_alt_light"-->
+                <!--                    app:layout_constraintEnd_toStartOf="@+id/btn_ping_location"-->
+                <!--                    app:layout_constraintTop_toTopOf="parent" />-->
 
                 <TextSwitcher
                     android:id="@+id/temp_text_view"
@@ -105,8 +106,8 @@
                     android:id="@+id/description_text_view"
                     android:layout_width="100dp"
                     android:layout_height="30dp"
-                    android:textAlignment="textStart"
                     android:foregroundGravity="left"
+                    android:textAlignment="textStart"
                     app:layout_constraintStart_toStartOf="@+id/humidity_text_view"
                     app:layout_constraintTop_toBottomOf="@+id/humidity_text_view" />
 
@@ -115,8 +116,8 @@
                     android:layout_width="100dp"
                     android:layout_height="20dp"
                     android:layout_marginEnd="16dp"
-                    android:textAlignment="textStart"
                     android:foregroundGravity="left"
+                    android:textAlignment="textStart"
                     app:layout_constraintStart_toStartOf="@+id/wind_text_view"
                     app:layout_constraintTop_toBottomOf="@+id/wind_text_view" />
 
@@ -124,8 +125,8 @@
                     android:id="@+id/wind_text_view"
                     android:layout_width="100dp"
                     android:layout_height="20dp"
-                    android:textAlignment="textStart"
                     android:foregroundGravity="left"
+                    android:textAlignment="textStart"
                     app:layout_constraintStart_toStartOf="@+id/temp_text_view"
                     app:layout_constraintTop_toBottomOf="@+id/temp_text_view" />
 

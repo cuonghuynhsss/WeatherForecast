@@ -7,4 +7,7 @@
     <dimen name="spacing_xxlarge">50dp</dimen>
     <dimen name="spacing_xxxlarge">60dp</dimen>
     <dimen name="drag_dismiss_distance">112dp</dimen> <!-- 2 * ?android:actionBarSize -->
+
+    <dimen name="custom_marker_image">50dp</dimen>
+    <dimen name="custom_marker_padding">2dp</dimen>
 </resources>
