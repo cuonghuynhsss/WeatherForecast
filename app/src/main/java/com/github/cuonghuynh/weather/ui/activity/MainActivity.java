@@ -1,6 +1,7 @@
 package com.github.cuonghuynh.weather.ui.activity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -120,9 +121,8 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
-
         initViewModel();
-        initObserve();
+        initView();
         setContentView(binding.getRoot());
         setSupportActionBar(binding.contentMainLayout.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
@@ -176,8 +176,6 @@ public class MainActivity extends BaseActivity {
 
     private void initViewModel() {
         weatherViewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
-        weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_HOME_ID);
-        binding.contentMainLayout.getRoot().setVisibility(View.VISIBLE);
         weatherViewModel.getNavigationIdSelected().observe(this, navCurrent -> {
             switch (navCurrent) {
                 case 1:
@@ -211,8 +209,16 @@ public class MainActivity extends BaseActivity {
         });
     }
 
-    private void initObserve() {
-
+    private void initView() {
+        weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_HOME_ID);
+        binding.contentMainLayout.getRoot().setVisibility(View.VISIBLE);
+        binding.tvHome.setTypeface(Typeface.DEFAULT_BOLD);
+        binding.tvChat.setTypeface(Typeface.DEFAULT_BOLD);
+        binding.tvMap.setTypeface(Typeface.DEFAULT_BOLD);
+        binding.tvSetting.setTypeface(Typeface.DEFAULT_BOLD);
+        binding.llChat.setBackground(null);
+        binding.llMap.setBackground(null);
+        binding.llSetting.setBackground(null);
     }
 
     private void initSearchView() {
@@ -241,6 +247,7 @@ public class MainActivity extends BaseActivity {
 
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     private void initValues() {
         colors = getResources().getIntArray(R.array.mdcolor_500);
         colorsAlpha = getResources().getIntArray(R.array.mdcolor_500_alpha);
@@ -293,8 +300,8 @@ public class MainActivity extends BaseActivity {
                 }
             }
         });
-
         binding.btnHome.setOnClickListener(v -> {
+            clickHomeBtn();
             if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_HOME_ID)) {
                 weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_HOME_ID);
                 binding.contentMainLayout.getRoot().setVisibility(View.VISIBLE);
@@ -307,10 +314,11 @@ public class MainActivity extends BaseActivity {
             }
         });
         binding.btnChat.setOnClickListener(v -> {
+            clickChatBtn();
             if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_CHAT_ID)) {
                 final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 ChatBotFragment chatBotFragment = new ChatBotFragment();
-                if (weatherViewModel.getNavigationIdSelected().getValue().equals(Constants.NAVIGATION_HOME_ID)){
+                if (weatherViewModel.getNavigationIdSelected().getValue().equals(Constants.NAVIGATION_HOME_ID)) {
                     transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
                 } else {
                     transaction.setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right);
@@ -331,6 +339,7 @@ public class MainActivity extends BaseActivity {
         });
 
         binding.btnMap.setOnClickListener(v -> {
+            clickMapBtn();
             if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_MAP_ID)) {
                 final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 MapFragment mapFragment = new MapFragment();
@@ -341,7 +350,7 @@ public class MainActivity extends BaseActivity {
                     getLocation();
                 }
                 binding.contentMainLayout.getRoot().setVisibility(View.INVISIBLE);
-                if (weatherViewModel.getNavigationIdSelected().getValue().equals(1) || weatherViewModel.getNavigationIdSelected().getValue().equals(2)){
+                if (weatherViewModel.getNavigationIdSelected().getValue().equals(1) || weatherViewModel.getNavigationIdSelected().getValue().equals(2)) {
                     transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left);
 
                 } else {
@@ -362,13 +371,14 @@ public class MainActivity extends BaseActivity {
         });
 
         binding.btnSetting.setOnClickListener(v -> {
+            clickSettingBtn();
             if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_SETTING_ID)) {
                 final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 SettingFragment settingFragment = new SettingFragment();
                 transaction.setCustomAnimations(R.anim.slide_in,  // enter
                         R.anim.fade_out,  // exit
                         R.anim.fade_in,   // popEnter
-                        R.anim.slide_out );
+                        R.anim.slide_out);
                 transaction.replace(R.id.frame_nav, settingFragment).setReorderingAllowed(true);
                 transaction.addToBackStack(null);
                 transaction.commit();
@@ -382,6 +392,7 @@ public class MainActivity extends BaseActivity {
             }
             weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_SETTING_ID);
         });
+
 //        binding.btnMap.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {
@@ -410,6 +421,52 @@ public class MainActivity extends BaseActivity {
 //                binding.contentMainLayout.etSearch.setVisibility(View.GONE);
 //            }
 //        });
+    }
+
+    private void clickHomeBtn() {
+        binding.llHome.setBackground(getDrawable(R.drawable.shape));
+        binding.llChat.setBackground(null);
+        binding.llMap.setBackground(null);
+        binding.llSetting.setBackground(null);
+        binding.tvHome.setTypeface(Typeface.DEFAULT_BOLD);
+        binding.llHome.setPadding(55, 0, 55, 0);
+        binding.tvHome.setVisibility(View.VISIBLE);
+        binding.tvChat.setVisibility(View.GONE);
+        binding.tvMap.setVisibility(View.GONE);
+        binding.tvSetting.setVisibility(View.GONE);
+    }
+
+    private void clickChatBtn() {
+        binding.llChat.setBackground(getDrawable(R.drawable.shape));
+        binding.llHome.setBackground(null);
+        binding.llMap.setBackground(null);
+        binding.llSetting.setBackground(null);
+        binding.tvHome.setVisibility(View.GONE);
+        binding.tvChat.setVisibility(View.VISIBLE);
+        binding.tvMap.setVisibility(View.GONE);
+        binding.tvSetting.setVisibility(View.GONE);
+    }
+
+    private void clickMapBtn() {
+        binding.llChat.setBackground(null);
+        binding.llHome.setBackground(null);
+        binding.llMap.setBackground(getDrawable(R.drawable.shape));
+        binding.llSetting.setBackground(null);
+        binding.tvHome.setVisibility(View.GONE);
+        binding.tvChat.setVisibility(View.GONE);
+        binding.tvMap.setVisibility(View.VISIBLE);
+        binding.tvSetting.setVisibility(View.GONE);
+    }
+
+    private void clickSettingBtn() {
+        binding.llChat.setBackground(null);
+        binding.llHome.setBackground(null);
+        binding.llMap.setBackground(null);
+        binding.llSetting.setBackground(getDrawable(R.drawable.shape));
+        binding.tvHome.setVisibility(View.GONE);
+        binding.tvChat.setVisibility(View.GONE);
+        binding.tvMap.setVisibility(View.GONE);
+        binding.tvSetting.setVisibility(View.VISIBLE);
     }
 
     public void showKeyboard() {

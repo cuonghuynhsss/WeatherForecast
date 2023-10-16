@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/swipe_container"
@@ -14,13 +13,13 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-<!--        <include-->
-<!--            android:id="@+id/toolbarLayout"-->
-<!--            layout="@layout/toolbar" />-->
+        <!--        <include-->
+        <!--            android:id="@+id/toolbarLayout"-->
+        <!--            layout="@layout/toolbar" />-->
 
-<!--        <include-->
-<!--            android:id="@+id/contentEmptyLayout"-->
-<!--            layout="@layout/content_empty" />-->
+        <!--        <include-->
+        <!--            android:id="@+id/contentEmptyLayout"-->
+        <!--            layout="@layout/content_empty" />-->
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -31,21 +30,20 @@
             <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/fragment_container_view_tag"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent" />
 
             <FrameLayout
                 android:id="@+id/frame_nav"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginBottom="50dp"
-                />
+                android:layout_marginBottom="50dp" />
 
-<!--            <FrameLayout-->
-<!--                android:id="@+id/wwww"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="match_parent"-->
-<!--                android:layout_marginBottom="50dp"-->
-<!--                android:background="#ffffff"/>-->
+            <!--            <FrameLayout-->
+            <!--                android:id="@+id/wwww"-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="match_parent"-->
+            <!--                android:layout_marginBottom="50dp"-->
+            <!--                android:background="#ffffff"/>-->
 
             <include
                 android:id="@+id/contentMainLayout"
@@ -54,7 +52,7 @@
             <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/bottom_navi_bar"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="55dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent">
 
@@ -65,37 +63,103 @@
                     android:gravity="center"
                     android:orientation="horizontal">
 
-                    <ImageView
-                        android:id="@+id/btn_home"
-                        style="?android:attr/borderlessButtonStyle"
+                    <LinearLayout
+                        android:id="@+id/ll_home"
+                        style="@style/navi_layout"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:layout_marginEnd="10dp"
-                        android:src="@drawable/ic_home" />
+                        android:layout_weight="1"
+                        android:background="@drawable/shape">
 
-                    <ImageView
-                        android:id="@+id/btn_chat"
-                        style="?android:attr/borderlessButtonStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_marginEnd="10dp"
-                        android:src="@drawable/ic_bubble_chat" />
+                        <ImageView
+                            android:id="@+id/btn_home"
+                            android:layout_width="wrap_content"
+                            android:layout_height="25dp"
+                            android:src="@drawable/ic_home_light" />
 
-                    <ImageView
-                        android:id="@+id/btn_map"
-                        style="?android:attr/borderlessButtonStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="10dp"
-                        android:src="@drawable/ic_compass_light" />
+                        <TextView
+                            android:id="@+id/tv_home"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="Home"
+                            android:textAlignment="center"
+                            android:textStyle="bold" />
+                    </LinearLayout>
 
-                    <ImageView
-                        android:id="@+id/btn_setting"
-                        style="?android:attr/borderlessButtonStyle"
+                    <LinearLayout
+                        android:id="@+id/ll_chat"
+                        style="@style/navi_layout"
+                        android:layout_weight="1"
                         android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="10dp"
-                        android:src="@drawable/ic_setting_alt_line" />
+                        android:layout_height="match_parent">
+
+                        <ImageView
+                            android:id="@+id/btn_chat"
+                            android:layout_width="wrap_content"
+                            android:layout_height="25dp"
+                            android:src="@drawable/chatbot" />
+
+                        <TextView
+                            android:id="@+id/tv_chat"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="Chat"
+                            android:textAlignment="center"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:id="@+id/ll_map"
+                        style="@style/navi_layout"
+                        android:layout_weight="1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent">
+
+                        <ImageView
+                            android:id="@+id/btn_map"
+                            android:layout_width="wrap_content"
+                            android:layout_height="25dp"
+                            android:src="@drawable/ic_map" />
+
+                        <TextView
+                            android:id="@+id/tv_map"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="Map"
+                            android:textAlignment="center"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_setting"
+                        style="@style/navi_layout"
+                        android:layout_weight="1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent">
+
+                        <ImageView
+                            android:id="@+id/btn_setting"
+                            android:layout_width="wrap_content"
+                            android:layout_height="25dp"
+                            android:src="@drawable/ic_setting" />
+
+                        <TextView
+                            android:id="@+id/tv_setting"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="Setting"
+                            android:textAlignment="center"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
                 </LinearLayout>
             </com.google.android.material.bottomnavigation.BottomNavigationView>
         </androidx.constraintlayout.widget.ConstraintLayout>

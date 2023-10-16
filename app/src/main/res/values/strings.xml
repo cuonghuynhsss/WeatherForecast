@@ -91,5 +91,6 @@
     <string name="ok_label">OK</string>
     <string name="night_mode_label">Night Mode</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+<!--    <string name="hello_blank_fragment">Hello blank fragment</string>-->
+    <string name="api_map_key" templateMergeStrategy="preserve" translatable="false">AIzaSyBQ-3KODl5AyhuCfh1Ti9RIC5oMu3eRL60</string>
 </resources>

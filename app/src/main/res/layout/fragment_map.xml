@@ -5,33 +5,11 @@
     android:layout_height="match_parent"
     android:background="#ffffff">
 
-    <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:weightSum="100"
-        android:background="#ffffff">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="50"
-            android:id="@+id/user_list_recycler_view">
-
-        </androidx.recyclerview.widget.RecyclerView>
-
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="50"
             android:id="@+id/map_container">
-
-<!--            <com.google.android.gms.maps.MapView-->
-<!--                xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="match_parent"-->
-<!--                android:id="@+id/user_list_map" />-->
 
             <ImageButton
                 android:layout_width="35dp"
@@ -56,18 +34,11 @@
                 android:layout_marginRight="10dp"
                 android:layout_marginEnd="10dp"
                 android:id="@+id/btn_full_screen_map"/>
-
-
         </RelativeLayout>
-
-
-    </LinearLayout>
-
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/progressBar"
-        android:layout_centerInParent="true"
-        android:visibility="gone"/>
+    <fragment
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/google_map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"/>
 
 </RelativeLayout>
