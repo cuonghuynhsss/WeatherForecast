@@ -356,9 +356,9 @@ public class MainActivity extends BaseActivity {
                 } else {
                     transaction.setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right);
                 }
-                transaction.replace(R.id.frame_nav, mapFragment).setReorderingAllowed(true);
-                transaction.addToBackStack(null);
-                transaction.commit();
+//                transaction.replace(R.id.frame_nav, mapFragment).setReorderingAllowed(true);
+//                transaction.addToBackStack(null);
+//                transaction.commit();
 
 
                 if (weatherViewModel.getNavigationIdSelected().getValue().equals(Constants.NAVIGATION_HOME_ID)) {
@@ -368,6 +368,9 @@ public class MainActivity extends BaseActivity {
                 }
                 weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_MAP_ID);
             }
+            Intent myIntent = new Intent(MainActivity.this, MapActivity.class);
+            myIntent.putExtra("key", 1); //Optional parameters
+            MainActivity.this.startActivity(myIntent);
         });
 
         binding.btnSetting.setOnClickListener(v -> {

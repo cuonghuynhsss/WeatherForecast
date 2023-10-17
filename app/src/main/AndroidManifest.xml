@@ -32,6 +32,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.activity.MapActivity"
+            android:label="Map"
+            android:exported="true">
+        </activity>
         <activity android:name="com.github.cuonghuynh.weather.ui.activity.BaseActivity" />
     </application>
 

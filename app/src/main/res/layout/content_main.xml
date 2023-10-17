@@ -55,13 +55,14 @@
                     <!--                    </LinearLayout>-->
                 </androidx.appcompat.widget.Toolbar>
 
-                <com.miguelcatalan.materialsearchview.MaterialSearchView
-                    android:id="@+id/search_view"
-                    style="@style/MaterialSearchViewStyle"
+                <ImageView
+                    android:id="@+id/current_location"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginTop="4dp"
+                    android:src="@drawable/ic_compass_light" />
 
                 <!--                <EditText-->
                 <!--                    android:id="@+id/et_search"-->
@@ -90,6 +91,16 @@
                 <!--                    android:src="@drawable/ic_search_alt_light"-->
                 <!--                    app:layout_constraintEnd_toStartOf="@+id/btn_ping_location"-->
                 <!--                    app:layout_constraintTop_toTopOf="parent" />-->
+
+                <com.miguelcatalan.materialsearchview.MaterialSearchView
+                    android:id="@+id/search_view"
+                    style="@style/MaterialSearchViewStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextSwitcher
                     android:id="@+id/temp_text_view"
@@ -129,10 +140,6 @@
                     android:textAlignment="textStart"
                     app:layout_constraintStart_toStartOf="@+id/temp_text_view"
                     app:layout_constraintTop_toBottomOf="@+id/temp_text_view" />
-
-
-                <!--                    android:layout_width="0dp"-->
-                <!--                    android:layout_height="match_parent"-->
 
                 <com.airbnb.lottie.LottieAnimationView
                     android:id="@+id/animation_view"
