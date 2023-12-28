@@ -1,7 +1,6 @@
 package com.github.cuonghuynh.weather.ui.activity;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Address;
@@ -10,6 +9,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import com.github.cuonghuynh.weather.R;
+import com.github.cuonghuynh.weather.databinding.ActivityMapsBinding;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -56,17 +57,24 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private int ACCESS_LOCATION_REQUEST_CODE = 10001;
     FusedLocationProviderClient fusedLocationProviderClient;
     LocationRequest locationRequest;
-
+    ActivityMapsBinding mapsBinding;
     Marker userLocationMarker;
     Circle userLocationAccuracyCircle;
+
+    List<Marker> markerList = new ArrayList<>();
+    ImageView imageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Intent intent = getIntent();
-        String value = intent.getStringExtra("key");
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        initMap();
+
+    }
+
+
+    private void initMap(){
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -79,6 +87,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         locationRequest.setFastestInterval(500);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
+
 
     /**
      * Manipulates the map once available.
@@ -122,15 +131,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 //        mMap.animateCamera(cameraUpdate);
 
         try {
-            List<Address> addresses = geocoder.getFromLocationName("london", 1);
+            List<Address> addresses = geocoder.getFromLocationName("hochiminh", 1);
             if (addresses.size() > 0) {
                 Address address = addresses.get(0);
-                LatLng london = new LatLng(address.getLatitude(), address.getLongitude());
+                LatLng saigon = new LatLng(address.getLatitude(), address.getLongitude());
                 MarkerOptions markerOptions = new MarkerOptions()
-                        .position(london)
+                        .position(saigon)
                         .title(address.getLocality());
                 mMap.addMarker(markerOptions);
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(london, 16));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(saigon, 16));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -166,7 +175,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         //Execute Directions API request
         GeoApiContext context = new GeoApiContext.Builder()
-                .apiKey("AIzaSyBQ-3KODl5AyhuCfh1Ti9RIC5oMu3eRL60")
+                .apiKey("AIzaSyBCHk19VPoZrGO4gA-Az0f4I4s65tnx308")
                 .build();
         DirectionsApiRequest req = DirectionsApi.getDirections(context, "10.803505, 106.632858", "10.826960, 106.592981");
         try {
@@ -308,11 +317,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             if (addresses.size() > 0) {
                 Address address = addresses.get(0);
                 String streetAddress = address.getAddressLine(0);
-                mMap.addMarker(new MarkerOptions()
+                markerList.add(mMap.addMarker(new MarkerOptions()
                         .position(latLng)
                         .title(streetAddress)
                         .draggable(true)
-                );
+                ));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -347,6 +356,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == ACCESS_LOCATION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 enableUserLocation();

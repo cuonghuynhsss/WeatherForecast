@@ -7,6 +7,7 @@ public class Constants {
   public static final Integer NAVIGATION_SETTING_ID = 4;
   public static final String BASE_URL = "https://api.openweathermap.org/data/2.5/";
   public static final String UNITS = "metric";
+  public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
   public static final String[] DAYS_OF_WEEK = {
       "Sunday",
       "Monday",

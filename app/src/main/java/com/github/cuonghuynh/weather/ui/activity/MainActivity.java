@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.icu.text.SimpleDateFormat;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
@@ -48,7 +50,6 @@ import com.github.cuonghuynh.weather.model.fivedayweather.FiveDayResponse;
 import com.github.cuonghuynh.weather.model.fivedayweather.ItemHourly;
 import com.github.cuonghuynh.weather.service.ApiService;
 import com.github.cuonghuynh.weather.ui.fragment.AboutFragment;
-import com.github.cuonghuynh.weather.ui.fragment.MapFragment;
 import com.github.cuonghuynh.weather.ui.fragment.ChatBotFragment;
 import com.github.cuonghuynh.weather.ui.fragment.SettingFragment;
 import com.github.cuonghuynh.weather.utils.ApiClient;
@@ -66,6 +67,7 @@ import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.listeners.OnClickListener;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -342,7 +344,7 @@ public class MainActivity extends BaseActivity {
             clickMapBtn();
             if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_MAP_ID)) {
                 final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                MapFragment mapFragment = new MapFragment();
+                com.github.cuonghuynh.weather.ui.fragment.MapFragment mapFragment = new com.github.cuonghuynh.weather.ui.fragment.MapFragment();
                 locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     OnGPS();
@@ -358,7 +360,7 @@ public class MainActivity extends BaseActivity {
                 }
 //                transaction.replace(R.id.frame_nav, mapFragment).setReorderingAllowed(true);
 //                transaction.addToBackStack(null);
-//                transaction.commit();
+//                transaction.commit(   );
 
 
                 if (weatherViewModel.getNavigationIdSelected().getValue().equals(Constants.NAVIGATION_HOME_ID)) {
@@ -394,6 +396,92 @@ public class MainActivity extends BaseActivity {
                 }
             }
             weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_SETTING_ID);
+        });
+
+        binding.contentMainLayout.currentLocation.setOnClickListener(view -> {
+            double lat = 0;
+            double lon = 0;
+            apiKey = getResources().getString(R.string.open_weather_map_api);
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                OnGPS();
+            } else {
+                if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+                } else {
+                    Location locationGPS = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    if (locationGPS != null) {
+                        lat = locationGPS.getLatitude();
+                        lon = locationGPS.getLongitude();
+                        latitude = String.valueOf(lat);
+                        longitude = String.valueOf(lon);
+                        Log.d("aaaa", "Your Location: " + "  " + "Latitude: " + latitude + "   " + "Longitude: " + longitude);
+                    } else {
+                        Toast.makeText(this, "Unable to find location.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+            Geocoder gcd = new Geocoder(this, Locale.getDefault());
+            List<Address> addresses = null;
+            try {
+                addresses = gcd.getFromLocation(lat, lon, 1);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            String locality = "";
+            if (addresses != null && addresses.size() > 0) {
+                locality = addresses.get(0).getAdminArea();
+            }
+            Log.d("aaaa_a", locality);
+//            disposable.add(apiService.getCurrentWeatherForLatLon(lat, lon, apiKey).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableSingleObserver<CurrentWeatherResponse>() {
+//                        @Override
+//                        public void onSuccess(CurrentWeatherResponse currentWeatherResponse) {
+//                            isLoad = true;
+//                            storeCurrentWeather(currentWeatherResponse);
+//                            storeCityInfo(currentWeatherResponse);
+//                            Log.d("aaa", currentWeatherResponse.getBase());
+//                            Log.d("aaa", currentWeatherResponse.getName());
+//                            for (WeatherItem item : currentWeatherResponse.getWeather())
+//                                Log.d("aaa_item", item.getDescription());
+//                            binding.swipeContainer.setRefreshing(false);
+//                        }
+//
+//                        @Override
+//                        public void onError(Throwable e) {
+//                            binding.swipeContainer.setRefreshing(false);
+//                            try {
+//                                HttpException error = (HttpException) e;
+//                                handleErrorCode(error);
+//                            } catch (Exception exception) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    })
+//
+//            );
+            disposable.add(apiService.getCurrentWeather(locality, Constants.UNITS, defaultLang, apiKey).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableSingleObserver<CurrentWeatherResponse>() {
+                        @Override
+                        public void onSuccess(CurrentWeatherResponse currentWeatherResponse) {
+                            isLoad = true;
+                            storeCurrentWeather(currentWeatherResponse);
+                            storeCityInfo(currentWeatherResponse);
+                            binding.swipeContainer.setRefreshing(false);
+
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            binding.swipeContainer.setRefreshing(false);
+                            try {
+                                HttpException error = (HttpException) e;
+                                handleErrorCode(error);
+                            } catch (Exception exception) {
+                                e.printStackTrace();
+                            }
+                        }
+                    })
+
+            );
         });
 
 //        binding.btnMap.setOnClickListener(new View.OnClickListener() {
@@ -683,8 +771,9 @@ public class MainActivity extends BaseActivity {
     private void requestWeather(String cityName, boolean isSearch) {
         if (AppUtil.isNetworkConnected()) {
             getCurrentWeather(cityName, isSearch);
-            //getCurrentWeatherForLatLon(21.0282, 105.8542);
-            getFiveDaysWeather(cityName);
+            getCurrentWeatherForLatLon("vitri1", 10.802227, 106.715561);
+            getCurrentWeatherForLatLon("vitri2",10.806216, 106.628021);
+        getFiveDaysWeather(cityName);
         } else {
             SnackbarUtil.with(binding.swipeContainer).setMessage(getString(R.string.no_internet_message)).setDuration(SnackbarUtil.LENGTH_LONG).showError();
             binding.swipeContainer.setRefreshing(false);
@@ -720,7 +809,7 @@ public class MainActivity extends BaseActivity {
         );
     }
 
-    private void getCurrentWeatherForLatLon(double lat, double lon) {
+    private void getCurrentWeatherForLatLon(String vitri, double lat, double lon) {
         apiKey = getResources().getString(R.string.open_weather_map_api);
         disposable.add(apiService.getCurrentWeatherForLatLon(lat, lon, apiKey).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableSingleObserver<CurrentWeatherResponse>() {
                     @Override
@@ -728,11 +817,14 @@ public class MainActivity extends BaseActivity {
                         isLoad = true;
 //                        storeCurrentWeather(currentWeatherResponse);
 //                        storeCityInfo(currentWeatherResponse);
-                        Log.d("aaa", currentWeatherResponse.getBase());
-                        Log.d("aaa", currentWeatherResponse.getName());
+                        Log.d(vitri, String.valueOf(currentWeatherResponse.getMain().getTemp()));
+                        Log.d(vitri, String.valueOf(currentWeatherResponse.getMain().getHumidity()));
+                        Log.d(vitri, String.valueOf(currentWeatherResponse.getMain().getTempMax()));
+                        Log.d(vitri, String.valueOf(currentWeatherResponse.getMain().getPressure()));
+                        Log.d(vitri, currentWeatherResponse.getName());
                         for (WeatherItem item : currentWeatherResponse.getWeather())
-                            Log.d("aaa_item", item.getDescription());
-                        binding.swipeContainer.setRefreshing(false);
+                            Log.d(vitri, item.getDescription());
+                        //binding.swipeContainer.setRefreshing(false);
                     }
 
                     @Override
@@ -796,7 +888,11 @@ public class MainActivity extends BaseActivity {
 
     private void storeCurrentWeather(CurrentWeatherResponse response) {
         CurrentWeather currentWeather = new CurrentWeather();
-        currentWeather.setTemp(response.getMain().getTemp());
+        if (response.getMain().getTemp() > 100) {
+            currentWeather.setTemp(response.getMain().getTemp() / 10);
+        } else {
+            currentWeather.setTemp(response.getMain().getTemp());
+        }
         currentWeather.setHumidity(response.getMain().getHumidity());
         currentWeather.setDescription(response.getWeather().get(0).getDescription());
         currentWeather.setMain(response.getWeather().get(0).getMain());

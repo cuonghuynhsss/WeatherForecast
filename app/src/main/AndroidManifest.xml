@@ -16,7 +16,7 @@
         android:theme="@style/AppTheme">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBQ-3KODl5AyhuCfh1Ti9RIC5oMu3eRL60" />
+            android:value="AIzaSyBCHk19VPoZrGO4gA-Az0f4I4s65tnx308" />
         <activity
             android:name="com.github.cuonghuynh.weather.ui.activity.HourlyActivity"
             android:exported="true"
