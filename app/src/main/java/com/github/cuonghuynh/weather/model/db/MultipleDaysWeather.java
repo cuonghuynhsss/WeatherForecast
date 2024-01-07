@@ -102,7 +102,7 @@ public class MultipleDaysWeather extends AbstractItem<MultipleDaysWeather, Multi
     public void bindView(@NonNull MultipleDaysWeather item, @NonNull List<Object> payloads) {
       Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
       calendar.setTimeInMillis(item.getDt() * 1000L);
-      if (AppUtil.isRTL(context)) {
+      if (AppUtil.getLanguageSelected()) {
         DateConverter converter = new DateConverter(
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH) + 1,

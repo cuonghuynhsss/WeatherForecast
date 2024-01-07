@@ -17,7 +17,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.github.cuonghuynh.weather.R;
-import com.github.cuonghuynh.weather.databinding.FragmentMapBinding;
 import com.github.cuonghuynh.weather.utils.ViewWeightAnimationWrapper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -40,9 +39,12 @@ import com.google.maps.model.EncodedPolyline;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapFragment extends Fragment  implements OnMapReadyCallback,
-        GoogleMap.OnMapLongClickListener, GoogleMap.OnPolylineClickListener,
-        View.OnClickListener, GoogleMap.OnInfoWindowClickListener{
+/**
+ * A simple {@link Fragment} subclass.
+ * Use the  factory method to
+ * create an instance of this fragment.
+ */
+public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnPolylineClickListener, View.OnClickListener, GoogleMap.OnInfoWindowClickListener {
 
     private static final String TAG = "ChatBotFragment";
     private MapView mMapView;
@@ -64,8 +66,8 @@ public class MapFragment extends Fragment  implements OnMapReadyCallback,
 
     }
 
-    public static ChatBotFragment newInstance() {
-        return new ChatBotFragment();
+    public static WeatherMapFragment newInstance() {
+        return new WeatherMapFragment();
     }
 
     @SuppressLint("MissingInflatedId")
@@ -73,7 +75,7 @@ public class MapFragment extends Fragment  implements OnMapReadyCallback,
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_map, container, false);
+        View view = inflater.inflate(R.layout.fragment_weather_map, container, false);
         mMapView = view.findViewById(R.id.user_list_map);
         view.findViewById(R.id.btn_full_screen_map).setOnClickListener(this);
         mMapContainer = view.findViewById(R.id.map_container);
@@ -214,13 +216,13 @@ public class MapFragment extends Fragment  implements OnMapReadyCallback,
 
 
     private void addMapMarkers() {
-        LatLng latLng = new LatLng(10.762622,  106.660172);
+                    LatLng latLng = new LatLng(10.762622,  106.660172);
         MarkerOptions markerOptions = new MarkerOptions()
-                .position(latLng)
-                .title("Ho Chi Minh")
-                .snippet("Wonder of the world!");
-        mGoogleMap.addMarker(markerOptions);
-        //List<Address> addresses = geocoder.getFromLocationName("hochiminh", 1);
+                                            .position(latLng)
+                                            .title("Ho Chi Minh")
+                                            .snippet("Wonder of the world!");
+            mGoogleMap.addMarker(markerOptions);
+            //List<Address> addresses = geocoder.getFromLocationName("hochiminh", 1);
 //            if (addresses.size() > 0) {
 //                Address address = addresses.get(0);
 //                LatLng saigon = new LatLng(address.getLatitude(), address.getLongitude());
@@ -229,8 +231,8 @@ public class MapFragment extends Fragment  implements OnMapReadyCallback,
 //                        .title(address.getLocality());
 //
 //            }
-        mGoogleMap.addMarker(markerOptions);
-        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+            mGoogleMap.addMarker(markerOptions);
+            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
 
     }
     private int mMapLayoutState = 0;

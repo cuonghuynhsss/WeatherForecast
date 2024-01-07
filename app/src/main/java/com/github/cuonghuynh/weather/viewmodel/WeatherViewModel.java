@@ -12,8 +12,16 @@ public class WeatherViewModel extends ViewModel {
         return navigationIdSelected;
     }
 
+    public LiveData<Boolean> getLanguageSelected() {
+        return languageSelected;
+    }
+
     public void setNavigationIdSelected(Integer navigationIdSelected) {
         this.navigationIdSelected.setValue(navigationIdSelected);
+    }
+
+    public void setLanguageSelected(Boolean languageSelected) {
+        this.languageSelected.setValue(languageSelected);
     }
 
     public LiveData<CityInfo> getCityInfoCurrent() {
@@ -24,6 +32,7 @@ public class WeatherViewModel extends ViewModel {
         this.cityInfo.setValue(cityInfo);
     }
 
-    private MutableLiveData<Integer> navigationIdSelected = new MutableLiveData<>();
-    private MutableLiveData<CityInfo> cityInfo = new MutableLiveData<>();
+    private final MutableLiveData<Integer> navigationIdSelected = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> languageSelected = new MutableLiveData<>();
+    private final MutableLiveData<CityInfo> cityInfo = new MutableLiveData<>();
 }

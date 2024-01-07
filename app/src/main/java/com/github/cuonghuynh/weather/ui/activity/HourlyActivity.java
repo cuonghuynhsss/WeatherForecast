@@ -74,7 +74,7 @@ public class HourlyActivity extends BaseActivity {
     binding.cardView.setCardBackgroundColor(fiveDayWeather.getColor());
     Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
     calendar.setTimeInMillis(fiveDayWeather.getDt() * 1000L);
-    if (AppUtil.isRTL(this)) {
+    if (AppUtil.getLanguageSelected()) {
       binding.dayNameTextView.setText(Constants.DAYS_OF_WEEK_VIET_NAM[calendar.get(Calendar.DAY_OF_WEEK) - 1]);
     } else {
       binding.dayNameTextView.setText(Constants.DAYS_OF_WEEK[calendar.get(Calendar.DAY_OF_WEEK) - 1]);
@@ -124,7 +124,7 @@ public class HourlyActivity extends BaseActivity {
   private void setChartValues(List<ItemHourlyDB> itemHourlyDBList) {
     List<Entry> entries = new ArrayList<>();
     int i = 0;
-    if (AppUtil.isRTL(this)) {
+    if (AppUtil.getLanguageSelected()) {
       int j = itemHourlyDBList.size() - 1;
       while (j >= 0) {
         entries.add(new Entry(i, (float) itemHourlyDBList.get(j).getTemp()));

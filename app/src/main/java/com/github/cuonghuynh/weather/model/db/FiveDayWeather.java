@@ -157,7 +157,7 @@ public class FiveDayWeather extends AbstractItem<FiveDayWeather, FiveDayWeather.
       };
       Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
       calendar.setTimeInMillis(item.getDt() * 1000L);
-      if (AppUtil.isRTL(context)) {
+      if (AppUtil.getLanguageSelected()) {
         binding.dayNameTextView.setText(Constants.DAYS_OF_WEEK_VIET_NAM[calendar.get(Calendar.DAY_OF_WEEK) - 1]);
       } else {
         binding.dayNameTextView.setText(Constants.DAYS_OF_WEEK[calendar.get(Calendar.DAY_OF_WEEK) - 1]);

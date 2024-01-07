@@ -3,7 +3,6 @@ package com.github.cuonghuynh.weather.ui.fragment;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.graphics.Color;
-import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -37,16 +36,12 @@ import com.google.maps.model.DirectionsRoute;
 import com.google.maps.model.DirectionsStep;
 import com.google.maps.model.EncodedPolyline;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the  factory method to
- * create an instance of this fragment.
- */
-public class ChatBotFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnPolylineClickListener, View.OnClickListener, GoogleMap.OnInfoWindowClickListener {
+public class WeatherJourneyFragment extends Fragment  implements OnMapReadyCallback,
+        GoogleMap.OnMapLongClickListener, GoogleMap.OnPolylineClickListener,
+        View.OnClickListener, GoogleMap.OnInfoWindowClickListener{
 
     private static final String TAG = "ChatBotFragment";
     private MapView mMapView;
@@ -68,8 +63,8 @@ public class ChatBotFragment extends Fragment implements OnMapReadyCallback, Goo
 
     }
 
-    public static ChatBotFragment newInstance() {
-        return new ChatBotFragment();
+    public static WeatherMapFragment newInstance() {
+        return new WeatherMapFragment();
     }
 
     @SuppressLint("MissingInflatedId")
@@ -77,7 +72,7 @@ public class ChatBotFragment extends Fragment implements OnMapReadyCallback, Goo
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_chat_bot, container, false);
+        View view = inflater.inflate(R.layout.fragment_map, container, false);
         mMapView = view.findViewById(R.id.user_list_map);
         view.findViewById(R.id.btn_full_screen_map).setOnClickListener(this);
         mMapContainer = view.findViewById(R.id.map_container);
@@ -218,13 +213,13 @@ public class ChatBotFragment extends Fragment implements OnMapReadyCallback, Goo
 
 
     private void addMapMarkers() {
-                    LatLng latLng = new LatLng(10.762622,  106.660172);
+        LatLng latLng = new LatLng(10.762622,  106.660172);
         MarkerOptions markerOptions = new MarkerOptions()
-                                            .position(latLng)
-                                            .title("Ho Chi Minh")
-                                            .snippet("Wonder of the world!");
-            mGoogleMap.addMarker(markerOptions);
-            //List<Address> addresses = geocoder.getFromLocationName("hochiminh", 1);
+                .position(latLng)
+                .title("Ho Chi Minh")
+                .snippet("Wonder of the world!");
+        mGoogleMap.addMarker(markerOptions);
+        //List<Address> addresses = geocoder.getFromLocationName("hochiminh", 1);
 //            if (addresses.size() > 0) {
 //                Address address = addresses.get(0);
 //                LatLng saigon = new LatLng(address.getLatitude(), address.getLongitude());
@@ -233,8 +228,8 @@ public class ChatBotFragment extends Fragment implements OnMapReadyCallback, Goo
 //                        .title(address.getLocality());
 //
 //            }
-            mGoogleMap.addMarker(markerOptions);
-            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+        mGoogleMap.addMarker(markerOptions);
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
 
     }
     private int mMapLayoutState = 0;
