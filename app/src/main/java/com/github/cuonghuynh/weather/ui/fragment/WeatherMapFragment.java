@@ -1,30 +1,56 @@
 package com.github.cuonghuynh.weather.ui.fragment;
 
+import static com.github.cuonghuynh.weather.ui.activity.MainActivity.REQUEST_LOCATION;
+
+import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.github.cuonghuynh.weather.R;
 import com.github.cuonghuynh.weather.utils.ViewWeightAnimationWrapper;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.DirectionsApi;
@@ -36,7 +62,15 @@ import com.google.maps.model.DirectionsRoute;
 import com.google.maps.model.DirectionsStep;
 import com.google.maps.model.EncodedPolyline;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -59,11 +93,85 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
     private Runnable mRunnable;
     private static final int LOCATION_UPDATE_INTERVAL = 3000;
     private Geocoder geocoder;
+    LatLng currentLocation;
+    FusedLocationProviderClient fusedLocationProviderClient;
+    LocationRequest locationRequest;
+
+    Marker userLocationMarker;
+    Circle userLocationAccuracyCircle;
+    Polygon polygon = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
+        locationRequest = LocationRequest.create();
+        locationRequest.setInterval(500);
+        locationRequest.setFastestInterval(500);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
+    }
+
+    LocationCallback locationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            super.onLocationResult(locationResult);
+            Log.d(TAG, "onLocationResult: " + locationResult.getLastLocation());
+            if (mGoogleMap != null) {
+                setUserLocationMarker(locationResult.getLastLocation());
+            }
+        }
+    };
+
+    private void draw(List<LatLng> latLngs) {
+
+        PolygonOptions polylineOptions = new PolygonOptions().addAll(latLngs).clickable(true);
+        polygon = mGoogleMap.addPolygon(polylineOptions);
+        polygon.setFillColor(Color.BLUE);
+        polygon.setStrokeColor(Color.BLUE);
+    }
+
+    private void setUserLocationMarker(Location location) {
+
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        currentLocation = latLng;
+        if (userLocationMarker == null) {
+            //Create a new marker
+            MarkerOptions markerOptions = new MarkerOptions();
+            markerOptions.position(latLng);
+            markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.placeholder));
+            markerOptions.rotation(location.getBearing());
+            markerOptions.anchor((float) 0.5, (float) 0.5);
+            userLocationMarker = mGoogleMap.addMarker(markerOptions);
+            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17));
+        } else {
+            //use the previously created marker
+            userLocationMarker.setPosition(latLng);
+            userLocationMarker.setRotation(location.getBearing());
+            //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17));
+        }
+
+        if (userLocationAccuracyCircle == null) {
+            CircleOptions circleOptions = new CircleOptions();
+            circleOptions.center(latLng);
+            circleOptions.strokeWidth(4);
+            circleOptions.strokeColor(Color.argb(255, 255, 0, 0));
+            circleOptions.fillColor(Color.argb(32, 255, 0, 0));
+            circleOptions.radius(location.getAccuracy());
+            userLocationAccuracyCircle = mGoogleMap.addCircle(circleOptions);
+        } else {
+            userLocationAccuracyCircle.setCenter(latLng);
+            userLocationAccuracyCircle.setRadius(location.getAccuracy());
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private void startLocationUpdates() {
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper());
+    }
+
+    private void stopLocationUpdates() {
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
     public static WeatherMapFragment newInstance() {
@@ -79,8 +187,36 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
         mMapView = view.findViewById(R.id.user_list_map);
         view.findViewById(R.id.btn_full_screen_map).setOnClickListener(this);
         mMapContainer = view.findViewById(R.id.map_container);
+        view.findViewById(R.id.btn_current_location).setOnClickListener(view1 -> {
+            try {
+                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
+            } catch (Exception e) {
+                Log.e(TAG, "aa" + e);
+            }
+        });
+        view.findViewById(R.id.draw).setOnClickListener(view1 -> {
+            if (polygon != null) {
+                polygon.remove();
+            }
+            if (latLngList != null && latLngList.size() > 0) {
+                PolygonOptions polygonOptions = new PolygonOptions().addAll(latLngList).clickable(true);
+                polygon = mGoogleMap.addPolygon(polygonOptions);
+                polygon.setFillColor(Color.BLUE);
+                polygon.setStrokeColor(Color.BLUE);
+            }
+
+        });
+        view.findViewById(R.id.clear).setOnClickListener(view1 -> {
+            if (polygon != null) {
+                polygon.remove();
+            }
+            for (Marker marker : markerList) marker.remove();
+            markerList.clear();
+            latLngList.clear();
+        });
         initGoogleMap(savedInstanceState);
         // Inflate the layout for this fragment
+
         return view;
     }
 
@@ -117,7 +253,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
         mMapView.onSaveInstanceState(mapViewBundle);
     }
 
-    private void aaa(){
+    private void aaa() {
         LatLng barcelona = new LatLng(10.803505, 106.632858);
         mGoogleMap.addMarker(new MarkerOptions().position(barcelona).title("Marker in Barcelona"));
 
@@ -142,14 +278,14 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
             if (res.routes != null && res.routes.length > 0) {
                 DirectionsRoute route = res.routes[0];
 
-                if (route.legs !=null) {
-                    for(int i=0; i<route.legs.length; i++) {
+                if (route.legs != null) {
+                    for (int i = 0; i < route.legs.length; i++) {
                         DirectionsLeg leg = route.legs[i];
                         if (leg.steps != null) {
-                            for (int j=0; j<leg.steps.length;j++){
+                            for (int j = 0; j < leg.steps.length; j++) {
                                 DirectionsStep step = leg.steps[j];
-                                if (step.steps != null && step.steps.length >0) {
-                                    for (int k=0; k<step.steps.length;k++){
+                                if (step.steps != null && step.steps.length > 0) {
+                                    for (int k = 0; k < step.steps.length; k++) {
                                         DirectionsStep step1 = step.steps[k];
                                         EncodedPolyline points1 = step1.polyline;
                                         if (points1 != null) {
@@ -175,7 +311,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
                     }
                 }
             }
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             Log.e(TAG, ex.getLocalizedMessage());
         }
 
@@ -189,6 +325,29 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
         mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
 
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(zaragoza, 6));
+    }
+
+
+    LocationManager locationManager;
+    String latitude, longitude;
+
+    public LatLng getLatLngFromAddress(String address) {
+        Geocoder geocoder = new Geocoder(getContext());
+       List<Address> addressList;
+
+        try {
+            addressList = geocoder.getFromLocationName(address, 1);
+
+            if (addressList != null) {
+                double doubleLat = addressList.get(0).getLatitude();
+                double doubleLong = addressList.get(0).getLongitude();
+
+                return new LatLng(doubleLat,doubleLong);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return currentLocation;
     }
 
     @Override
@@ -206,23 +365,40 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
 
     }
 
+    List<LatLng> latLngList = new ArrayList<>();
+    List<Marker> markerList = new ArrayList<>();
+
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mGoogleMap = googleMap;
         addMapMarkers();
         mGoogleMap.setOnPolylineClickListener(this);
+        getLatLngFromAddress("Tan Phu, Ho Chi Minh");
         //aaa();
+
+        mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(@NonNull LatLng latLng) {
+                MarkerOptions markerOptions = new MarkerOptions().position(latLng);
+                Marker marker = mGoogleMap.addMarker(markerOptions);
+                latLngList.add(latLng);
+                markerList.add(marker);
+            }
+        });
+
+
     }
 
+    List<LatLng> sss = new ArrayList<>();
 
     private void addMapMarkers() {
-                    LatLng latLng = new LatLng(10.762622,  106.660172);
+        LatLng latLng = new LatLng(10.762622, 106.660172);
         MarkerOptions markerOptions = new MarkerOptions()
-                                            .position(latLng)
-                                            .title("Ho Chi Minh")
-                                            .snippet("Wonder of the world!");
-            mGoogleMap.addMarker(markerOptions);
-            //List<Address> addresses = geocoder.getFromLocationName("hochiminh", 1);
+                .position(latLng)
+                .title("Ho Chi Minh")
+                .snippet("Wonder of the world!");
+        mGoogleMap.addMarker(markerOptions);
+        //List<Address> addresses = geocoder.getFromLocationName("hochiminh", 1);
 //            if (addresses.size() > 0) {
 //                Address address = addresses.get(0);
 //                LatLng saigon = new LatLng(address.getLatitude(), address.getLongitude());
@@ -231,23 +407,24 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
 //                        .title(address.getLocality());
 //
 //            }
-            mGoogleMap.addMarker(markerOptions);
-            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+        mGoogleMap.addMarker(markerOptions);
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
 
     }
+
     private int mMapLayoutState = 0;
     private static final int MAP_LAYOUT_STATE_CONTRACTED = 0;
     private static final int MAP_LAYOUT_STATE_EXPANDED = 1;
+
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.btn_full_screen_map:{
+        switch (v.getId()) {
+            case R.id.btn_full_screen_map: {
 
-                if(mMapLayoutState == MAP_LAYOUT_STATE_CONTRACTED){
+                if (mMapLayoutState == MAP_LAYOUT_STATE_CONTRACTED) {
                     mMapLayoutState = MAP_LAYOUT_STATE_EXPANDED;
                     expandMapAnimation();
-                }
-                else if(mMapLayoutState == MAP_LAYOUT_STATE_EXPANDED){
+                } else if (mMapLayoutState == MAP_LAYOUT_STATE_EXPANDED) {
                     mMapLayoutState = MAP_LAYOUT_STATE_CONTRACTED;
                     contractMapAnimation();
                 }
@@ -257,7 +434,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
         }
     }
 
-    private void contractMapAnimation(){
+    private void contractMapAnimation() {
         ViewWeightAnimationWrapper mapAnimationWrapper = new ViewWeightAnimationWrapper(mMapContainer);
         ObjectAnimator mapAnimation = ObjectAnimator.ofFloat(mapAnimationWrapper,
                 "weight",
@@ -276,7 +453,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
         mapAnimation.start();
     }
 
-    private void expandMapAnimation(){
+    private void expandMapAnimation() {
         ViewWeightAnimationWrapper mapAnimationWrapper = new ViewWeightAnimationWrapper(mMapContainer);
         ObjectAnimator mapAnimation = ObjectAnimator.ofFloat(mapAnimationWrapper,
                 "weight",
@@ -299,6 +476,11 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
     public void onResume() {
         super.onResume();
         mMapView.onResume();
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            startLocationUpdates();
+        } else {
+            // you need to request permissions...
+        }
         // update user locations every 'LOCATION_UPDATE_INTERVAL'
     }
 
@@ -312,6 +494,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
     public void onStop() {
         super.onStop();
         mMapView.onStop();
+        stopLocationUpdates();
     }
 
     @Override

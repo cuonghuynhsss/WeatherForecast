@@ -117,7 +117,7 @@ public class MainActivity extends BaseActivity {
     private int[] colorsAlpha;
     private WeatherViewModel weatherViewModel;
     private Date currentTime;
-    private static final int REQUEST_LOCATION = 1;
+    public static final int REQUEST_LOCATION = 1;
     LocationManager locationManager;
     String latitude, longitude;
 
