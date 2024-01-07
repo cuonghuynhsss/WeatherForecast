@@ -48,7 +48,7 @@ import java.util.List;
  */
 public class ChatBotFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.OnPolylineClickListener, View.OnClickListener, GoogleMap.OnInfoWindowClickListener {
 
-    private static final String TAG = "MapFragment";
+    private static final String TAG = "ChatBotFragment";
     private MapView mMapView;
     private GoogleMap mGoogleMap;
     private Marker mSelectedMarker = null;
