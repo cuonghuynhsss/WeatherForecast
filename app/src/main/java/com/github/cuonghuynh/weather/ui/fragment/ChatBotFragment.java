@@ -134,7 +134,7 @@ public class ChatBotFragment extends Fragment implements OnMapReadyCallback, Goo
 
         //Execute Directions API request
         GeoApiContext context = new GeoApiContext.Builder()
-                .apiKey("AIzaSyBCHk19VPoZrGO4gA-Az0f4I4s65tnx308")
+                .apiKey("AIzaSyDH32jqEJwVA0a_M3o-rxbWQOurmap5beQ")
                 .build();
         DirectionsApiRequest req = DirectionsApi.getDirections(context, "10.803505, 106.632858", "10.826960, 106.592981");
         try {
@@ -213,7 +213,7 @@ public class ChatBotFragment extends Fragment implements OnMapReadyCallback, Goo
         mGoogleMap = googleMap;
         addMapMarkers();
         mGoogleMap.setOnPolylineClickListener(this);
-        aaa();
+        //aaa();
     }
 
 

@@ -304,6 +304,7 @@ public class MainActivity extends BaseActivity {
         });
         binding.btnHome.setOnClickListener(v -> {
             clickHomeBtn();
+            binding.swipeContainer.setEnabled(true);
             if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_HOME_ID)) {
                 weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_HOME_ID);
                 binding.contentMainLayout.getRoot().setVisibility(View.VISIBLE);
@@ -317,6 +318,9 @@ public class MainActivity extends BaseActivity {
         });
         binding.btnChat.setOnClickListener(v -> {
             clickChatBtn();
+            binding.swipeContainer.setRefreshing(false);
+            binding.swipeContainer.setEnabled(false);
+            binding.swipeContainer.setRefreshing(false);
             if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_CHAT_ID)) {
                 final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 ChatBotFragment chatBotFragment = new ChatBotFragment();
@@ -342,6 +346,8 @@ public class MainActivity extends BaseActivity {
 
         binding.btnMap.setOnClickListener(v -> {
             clickMapBtn();
+            binding.swipeContainer.setRefreshing(false);
+            binding.swipeContainer.setEnabled(false);
             if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_MAP_ID)) {
                 final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 com.github.cuonghuynh.weather.ui.fragment.MapFragment mapFragment = new com.github.cuonghuynh.weather.ui.fragment.MapFragment();
@@ -358,9 +364,9 @@ public class MainActivity extends BaseActivity {
                 } else {
                     transaction.setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right);
                 }
-//                transaction.replace(R.id.frame_nav, mapFragment).setReorderingAllowed(true);
-//                transaction.addToBackStack(null);
-//                transaction.commit(   );
+                transaction.replace(R.id.frame_nav, mapFragment).setReorderingAllowed(true);
+                transaction.addToBackStack(null);
+                transaction.commit();
 
 
                 if (weatherViewModel.getNavigationIdSelected().getValue().equals(Constants.NAVIGATION_HOME_ID)) {
@@ -368,15 +374,15 @@ public class MainActivity extends BaseActivity {
                     animate.setDuration(500);
                     binding.contentMainLayout.getRoot().startAnimation(animate);
                 }
-                weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_MAP_ID);
+
             }
-            Intent myIntent = new Intent(MainActivity.this, MapActivity.class);
-            myIntent.putExtra("key", 1); //Optional parameters
-            MainActivity.this.startActivity(myIntent);
+            weatherViewModel.setNavigationIdSelected(Constants.NAVIGATION_MAP_ID);
         });
 
         binding.btnSetting.setOnClickListener(v -> {
             clickSettingBtn();
+            binding.swipeContainer.setRefreshing(false);
+            binding.swipeContainer.setEnabled(false);
             if (!Objects.requireNonNull(weatherViewModel.getNavigationIdSelected().getValue()).equals(Constants.NAVIGATION_SETTING_ID)) {
                 final FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 SettingFragment settingFragment = new SettingFragment();
@@ -739,19 +745,22 @@ public class MainActivity extends BaseActivity {
 
     private void requestWeathers(String cityName) {
         ApiService apiService = ApiClient.getClient().create(ApiService.class);
-        disposable.add(apiService.getMultipleDaysWeather(cityName, Constants.UNITS, defaultLang, 16, apiKey).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableSingleObserver<MultipleDaysWeatherResponse>() {
-            @Override
-            public void onSuccess(MultipleDaysWeatherResponse response) {
-                handleMultipleDaysResponse(response);
-                binding.swipeContainer.setRefreshing(false);
-            }
+        disposable.add(apiService.getMultipleDaysWeather(cityName, Constants.UNITS, defaultLang, 16, apiKey)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new DisposableSingleObserver<MultipleDaysWeatherResponse>() {
+                    @Override
+                    public void onSuccess(MultipleDaysWeatherResponse response) {
+                        handleMultipleDaysResponse(response);
+                        binding.swipeContainer.setRefreshing(false);
+                    }
 
-            @Override
-            public void onError(Throwable e) {
-                binding.swipeContainer.setRefreshing(false);
-                Log.e("MainActivity", "onError: " + e.getMessage());
-            }
-        }));
+                    @Override
+                    public void onError(Throwable e) {
+                        binding.swipeContainer.setRefreshing(false);
+                        Log.e("MainActivity", "onError: " + e.getMessage());
+                    }
+                }));
     }
 
     private void handleMultipleDaysResponse(MultipleDaysWeatherResponse response) {
@@ -772,8 +781,8 @@ public class MainActivity extends BaseActivity {
         if (AppUtil.isNetworkConnected()) {
             getCurrentWeather(cityName, isSearch);
             getCurrentWeatherForLatLon("vitri1", 10.802227, 106.715561);
-            getCurrentWeatherForLatLon("vitri2",10.806216, 106.628021);
-        getFiveDaysWeather(cityName);
+            getCurrentWeatherForLatLon("vitri2", 10.806216, 106.628021);
+            getFiveDaysWeather(cityName);
         } else {
             SnackbarUtil.with(binding.swipeContainer).setMessage(getString(R.string.no_internet_message)).setDuration(SnackbarUtil.LENGTH_LONG).showError();
             binding.swipeContainer.setRefreshing(false);
