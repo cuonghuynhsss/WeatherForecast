@@ -20,13 +20,13 @@
     </string>
     <string name="developer_info_text" translatable="false">
         <![CDATA[
-            <p>Huynh Chi Cuong <a href="https://twitter.com/cuonghuynh">@cuonghuynh</a></p>
+            <p>Huynh Chi Cuong <a href="https://twitter.com/cuonghuynh">@cuonghuynhsss</a></p>
         ]]>
     </string>
     <string name="design_api_text" translatable="false">
         <![CDATA[
             <p>
-            <a href="https://www.uplabs.com/posts/weather-app-freebie">Weather App Freebie</a> by
+            <a href="https://www.uplabs.com/posts/weather-app-freebie">Weather App </a> by CuongHuynh
             <br/>
             <a href="https://lottiefiles.com/user/26177">Lottie & Icon files</a> by Figma
             <br/>
@@ -34,6 +34,36 @@
             </p>
         ]]>
     </string>
+    <string name="libraries_text" translatable="false">
+        <![CDATA[
+           <p>
+            <a href="https://github.com/JakeWharton/butterknife">ButterKnife</a> - Apache-2.0
+            <br/>
+            <a href="https://github.com/square/retrofit">Retrofit</a> - Apache-2.0
+            <br/>
+            <a href="https://github.com/ReactiveX/RxAndroid">RxAndroid</a> - Apache-2.0
+            <br/>
+            <a href="https://github.com/objectbox/objectbox-java">ObjectBox</a> - Apache-2.0
+            <br/>
+            <a href="https://github.com/mikepenz/FastAdapter">FastAdapter</a> - Apache-2.0
+            <br/>
+            <a href="https://github.com/bumptech/glide">Glide</a> - Apache-2.0
+            <br/>
+            <a href="https://github.com/airbnb/lottie-android">Lottie-Android</a> - Apache-2.0
+            <br/>
+            <a href="https://github.com/MiguelCatalan/MaterialSearchView">MaterialSearchView</a> - Apache-2.0
+            <br/>
+            <a href="https://github.com/pwittchen/prefser">Prefser</a> - Apache-2.0
+            <br/>
+            <a href="https://github.com/PhilJay/MPAndroidChart">MPAndroidChart</a> - Apache-2.0
+            <br/>
+            <a href="https://github.com/InflationX/Calligraphy">Calligraphy</a> - Apache-2.0
+            <br/>
+            <a href="https://github.com/google/material-design-icons">Material design icons</a> - Creative Common Attribution 4.0 International License
+           </p>
+
+        ]]>
+</string>
     <string name="license_text" translatable="false">
         <![CDATA[
             <p>Copyright 2023 Cuong Huynh</p>

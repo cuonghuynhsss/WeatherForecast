@@ -4,27 +4,130 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/White"
-    android:orientation="vertical"
-    android:padding="40dp">
+    android:orientation="vertical">
 
-    <RadioGroup
-        android:id="@+id/radio_group"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:padding="10dp"
         android:orientation="vertical">
 
-        <RadioButton
-            android:id="@+id/radio_english"
-            android:layout_width="wrap_content"
+        <RadioGroup
+            android:id="@+id/radio_group"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="English" />
+            android:background="@drawable/layout_bg"
+            android:orientation="vertical">
 
-        <RadioButton
-            android:id="@+id/radio_vietnamese"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Vietnamese" />
-    </RadioGroup>
+            <RadioButton
+                android:id="@+id/radio_english"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="English"
+                android:textColor="@color/Black" />
+
+            <RadioButton
+                android:id="@+id/radio_vietnamese"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Vietnamese"
+                android:textColor="@color/Black" />
+        </RadioGroup>
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/nested_scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_large">
+
+                <LinearLayout
+                    android:id="@+id/toggle_info_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minHeight="?attr/actionBarSize"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/application_info_title"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                        android:textStyle="bold" />
+
+                    <View
+                        android:layout_width="@dimen/spacing_large"
+                        android:layout_height="wrap_content" />
+
+                    <ImageButton
+                        android:id="@+id/toggle_info_button"
+                        android:layout_width="?attr/actionBarSize"
+                        android:layout_height="?attr/actionBarSize"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        app:srcCompat="@drawable/ic_keyboard_arrow_down_black_24dp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/expand_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/text_application_info"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        style="@style/HeadlineTextStyle"
+                        android:text="@string/developer_info_title" />
+
+                    <TextView
+                        android:id="@+id/text_developer_info"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        style="@style/HeadlineTextStyle"
+                        android:text="@string/design_api_title" />
+
+                    <TextView
+                        android:id="@+id/text_design_api"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        style="@style/HeadlineTextStyle"
+                        android:text="@string/libraries_title" />
+
+                    <TextView
+                        android:id="@+id/text_libraries"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        style="@style/HeadlineTextStyle"
+                        android:text="@string/license_title" />
+
+                    <TextView
+                        android:id="@+id/text_license"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
 
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+    </LinearLayout>
 </LinearLayout>
