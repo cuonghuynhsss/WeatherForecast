@@ -44,6 +44,8 @@ import androidx.fragment.app.FragmentTransaction;
 import com.bumptech.glide.Glide;
 import com.github.cuonghuynh.weather.R;
 import com.github.cuonghuynh.weather.listener.OnSetApiKeyEventListener;
+import com.github.cuonghuynh.weather.model.common.WeatherItem;
+import com.github.cuonghuynh.weather.model.currentweather.CurrentWeatherResponse;
 import com.github.pwittchen.prefser.library.rx2.Prefser;
 
 import java.lang.reflect.InvocationTargetException;
@@ -52,6 +54,11 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import static android.Manifest.permission.ACCESS_NETWORK_STATE;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.observers.DisposableSingleObserver;
+import io.reactivex.schedulers.Schedulers;
+import retrofit2.HttpException;
 
 public class AppUtil {
     private static Interpolator fastOutSlowIn;

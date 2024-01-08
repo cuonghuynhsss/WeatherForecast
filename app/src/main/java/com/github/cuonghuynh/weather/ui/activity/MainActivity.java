@@ -701,8 +701,6 @@ public class MainActivity extends BaseActivity {
                         formattedDate = df.format(d);
                     }
 
-
-
                     CurrentWeather currentWeather = data.get(0);
                     if (isLoad) {
                         binding.contentMainLayout.tempTextView.setText(String.format(Locale.getDefault(), "%.0f°C", currentWeather.getTemp()));
@@ -864,7 +862,7 @@ public class MainActivity extends BaseActivity {
         );
     }
 
-    private void getCurrentWeatherForLatLon(String vitri, double lat, double lon) {
+    public void getCurrentWeatherForLatLon(String vitri, double lat, double lon) {
         apiKey = getResources().getString(R.string.open_weather_map_api);
         disposable.add(apiService.getCurrentWeatherForLatLon(lat, lon, apiKey).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableSingleObserver<CurrentWeatherResponse>() {
                     @Override

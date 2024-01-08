@@ -23,16 +23,24 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.load.HttpException;
 import com.github.cuonghuynh.weather.R;
+import com.github.cuonghuynh.weather.model.common.WeatherItem;
+import com.github.cuonghuynh.weather.model.currentweather.CurrentWeatherResponse;
+import com.github.cuonghuynh.weather.service.ApiService;
+import com.github.cuonghuynh.weather.utils.ApiClient;
 import com.github.cuonghuynh.weather.utils.ViewWeightAnimationWrapper;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -73,6 +81,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableSingleObserver;
+import io.reactivex.schedulers.Schedulers;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the  factory method to
@@ -109,6 +122,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
         locationRequest.setInterval(500);
         locationRequest.setFastestInterval(500);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        apiService = ApiClient.getClient().create(ApiService.class);
 
     }
 
@@ -177,7 +191,8 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
     public static WeatherMapFragment newInstance() {
         return new WeatherMapFragment();
     }
-
+    ConstraintLayout constraintLayout;
+    EditText editText;
     @SuppressLint("MissingInflatedId")
     @Nullable
     @Override
@@ -187,6 +202,8 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
         mMapView = view.findViewById(R.id.user_list_map);
         view.findViewById(R.id.btn_full_screen_map).setOnClickListener(this);
         mMapContainer = view.findViewById(R.id.map_container);
+        constraintLayout = view.findViewById(R.id.contaiter_search_wm);
+        editText = view.findViewById(R.id.et_search_wm);
         view.findViewById(R.id.btn_current_location).setOnClickListener(view1 -> {
             try {
                 mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 16));
@@ -214,10 +231,48 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
             markerList.clear();
             latLngList.clear();
         });
+
+        view.findViewById(R.id.btn_search_map_weather).setOnClickListener(v->{
+            if (!(editText.getText().length() == 0)){
+                LatLng latLng= getLatLngFromAddress(editText.getText().toString());
+                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+                getCurrentWeatherForLatLon(latLng);
+                mGoogleMap.addMarker(new MarkerOptions()
+                        .position(getLatLngFromAddress(editText.getText().toString()))
+                        .title(editText.getText().toString()));
+            }
+        });
         initGoogleMap(savedInstanceState);
         // Inflate the layout for this fragment
 
         return view;
+    }
+
+    private CompositeDisposable disposable = new CompositeDisposable();
+    private ApiService apiService;
+
+    public void getCurrentWeatherForLatLon(LatLng latLng){
+        String apiKey = getResources().getString(R.string.open_weather_map_api);
+                    disposable.add(apiService.getCurrentWeatherForLatLon(latLng.latitude, latLng.longitude, apiKey).subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableSingleObserver<CurrentWeatherResponse>() {
+                        @Override
+                        public void onSuccess(CurrentWeatherResponse currentWeatherResponse) {
+
+                            for (WeatherItem item : currentWeatherResponse.getWeather())
+                                Log.d("cuongcuong", item.getDescription());
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            try {
+                                HttpException error = (HttpException) e;
+                            } catch (Exception exception) {
+                                e.printStackTrace();
+                            }
+                        }
+                    })
+
+            );
     }
 
     private void initGoogleMap(Bundle savedInstanceState) {
@@ -374,6 +429,8 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
         addMapMarkers();
         mGoogleMap.setOnPolylineClickListener(this);
         getLatLngFromAddress("Tan Phu, Ho Chi Minh");
+        InputMethodManager imm = (InputMethodManager)  getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
         //aaa();
 
         mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
@@ -420,13 +477,20 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_full_screen_map: {
-
                 if (mMapLayoutState == MAP_LAYOUT_STATE_CONTRACTED) {
                     mMapLayoutState = MAP_LAYOUT_STATE_EXPANDED;
                     expandMapAnimation();
+                    InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
+                            Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+                    constraintLayout.setVisibility(View.GONE);
                 } else if (mMapLayoutState == MAP_LAYOUT_STATE_EXPANDED) {
                     mMapLayoutState = MAP_LAYOUT_STATE_CONTRACTED;
                     contractMapAnimation();
+                    constraintLayout.setVisibility(View.VISIBLE);
+
+                    InputMethodManager imm = (InputMethodManager)  getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
                 }
                 break;
             }
@@ -439,7 +503,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
         ObjectAnimator mapAnimation = ObjectAnimator.ofFloat(mapAnimationWrapper,
                 "weight",
                 100,
-                50);
+                70);
         mapAnimation.setDuration(800);
 
 //        ViewWeightAnimationWrapper recyclerAnimationWrapper = new ViewWeightAnimationWrapper(mUserListRecyclerView);
@@ -457,7 +521,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
         ViewWeightAnimationWrapper mapAnimationWrapper = new ViewWeightAnimationWrapper(mMapContainer);
         ObjectAnimator mapAnimation = ObjectAnimator.ofFloat(mapAnimationWrapper,
                 "weight",
-                50,
+                70,
                 100);
         mapAnimation.setDuration(800);
 
