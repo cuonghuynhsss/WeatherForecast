@@ -80,6 +80,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -112,6 +113,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
 
     Marker userLocationMarker;
     Circle userLocationAccuracyCircle;
+    Circle searchCircle;
     Polygon polygon = null;
 
     @Override
@@ -191,8 +193,10 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
     public static WeatherMapFragment newInstance() {
         return new WeatherMapFragment();
     }
+
     ConstraintLayout constraintLayout;
     EditText editText;
+
     @SuppressLint("MissingInflatedId")
     @Nullable
     @Override
@@ -228,18 +232,19 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
                 polygon.remove();
             }
             for (Marker marker : markerList) marker.remove();
+            for (Marker marker : markerListLongClick) marker.remove();
+            for (Marker marker : markerListSearch) marker.remove();
+            markerListLongClick.clear();
             markerList.clear();
+            markerListSearch.clear();
             latLngList.clear();
         });
 
-        view.findViewById(R.id.btn_search_map_weather).setOnClickListener(v->{
-            if (!(editText.getText().length() == 0)){
-                LatLng latLng= getLatLngFromAddress(editText.getText().toString());
+        view.findViewById(R.id.btn_search_map_weather).setOnClickListener(v -> {
+            if (!(editText.getText().length() == 0)) {
+                LatLng latLng = getLatLngFromAddress(editText.getText().toString());
                 mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
                 getCurrentWeatherForLatLon(latLng);
-                mGoogleMap.addMarker(new MarkerOptions()
-                        .position(getLatLngFromAddress(editText.getText().toString()))
-                        .title(editText.getText().toString()));
             }
         });
         initGoogleMap(savedInstanceState);
@@ -250,29 +255,78 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
 
     private CompositeDisposable disposable = new CompositeDisposable();
     private ApiService apiService;
+    private String currentWeather = "";
+    private List<Marker> markerListSearch = new ArrayList<>();
 
-    public void getCurrentWeatherForLatLon(LatLng latLng){
+    public void getCurrentWeatherForLatLon(LatLng latLng) {
         String apiKey = getResources().getString(R.string.open_weather_map_api);
-                    disposable.add(apiService.getCurrentWeatherForLatLon(latLng.latitude, latLng.longitude, apiKey).subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableSingleObserver<CurrentWeatherResponse>() {
-                        @Override
-                        public void onSuccess(CurrentWeatherResponse currentWeatherResponse) {
+        disposable.add(apiService.getCurrentWeatherForLatLon(latLng.latitude, latLng.longitude, apiKey).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableSingleObserver<CurrentWeatherResponse>() {
+                    @Override
+                    public void onSuccess(CurrentWeatherResponse currentWeatherResponse) {
 
-                            for (WeatherItem item : currentWeatherResponse.getWeather())
-                                Log.d("cuongcuong", item.getDescription());
+                        for (WeatherItem item : currentWeatherResponse.getWeather()) {
+                            Log.d("cuongcuong", item.getDescription());
+                            MarkerOptions markerOptions = new MarkerOptions()
+                                    .position(getLatLngFromAddress(editText.getText().toString()))
+                                    .title(editText.getText().toString())
+                                    .snippet(item.getDescription());
+                            Marker marker = mGoogleMap.addMarker(markerOptions);
+                            markerListSearch.add(marker);
+                            CircleOptions circleOptions = new CircleOptions();
+                            circleOptions.center(latLng);
+                            circleOptions.strokeWidth(4);
+                            //Color.argb()
+                            circleOptions.strokeColor(Color.argb(255, 255, 0, 0));
+                            circleOptions.fillColor(Color.argb(32, 0, 0, 255));
+                            circleOptions.radius(30000);
+                            mGoogleMap.addCircle(circleOptions);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        try {
+                            HttpException error = (HttpException) e;
+                        } catch (Exception exception) {
+                            e.printStackTrace();
+                        }
+                    }
+                })
+
+        );
+    }
+
+    public void getCurrentWeatherWithLongClick(String adrress, LatLng latLng) {
+        String apiKey = getResources().getString(R.string.open_weather_map_api);
+        disposable.add(apiService.getCurrentWeatherForLatLon(latLng.latitude, latLng.longitude, apiKey).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribeWith(new DisposableSingleObserver<CurrentWeatherResponse>() {
+                    @Override
+                    public void onSuccess(CurrentWeatherResponse currentWeatherResponse) {
+
+                        for (WeatherItem item : currentWeatherResponse.getWeather()) {
+                            Log.d("cuongcuong", item.getDescription());
+                            MarkerOptions markerOptions = new MarkerOptions()
+                                    .position(latLng)
+                                    .title(adrress)
+                                    .snippet(item.getDescription() + latLng.latitude + "--" + latLng.longitude);
+                            Marker marker = mGoogleMap.addMarker(markerOptions);
+                            markerListLongClick.add(marker);
                         }
 
-                        @Override
-                        public void onError(Throwable e) {
-                            try {
-                                HttpException error = (HttpException) e;
-                            } catch (Exception exception) {
-                                e.printStackTrace();
-                            }
-                        }
-                    })
+                    }
 
-            );
+                    @Override
+                    public void onError(Throwable e) {
+                        try {
+                            HttpException error = (HttpException) e;
+                        } catch (Exception exception) {
+                            e.printStackTrace();
+                        }
+                    }
+                })
+
+        );
     }
 
     private void initGoogleMap(Bundle savedInstanceState) {
@@ -388,7 +442,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
 
     public LatLng getLatLngFromAddress(String address) {
         Geocoder geocoder = new Geocoder(getContext());
-       List<Address> addressList;
+        List<Address> addressList;
 
         try {
             addressList = geocoder.getFromLocationName(address, 1);
@@ -397,7 +451,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
                 double doubleLat = addressList.get(0).getLatitude();
                 double doubleLong = addressList.get(0).getLongitude();
 
-                return new LatLng(doubleLat,doubleLong);
+                return new LatLng(doubleLat, doubleLong);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -413,6 +467,18 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
     @Override
     public void onMapLongClick(@NonNull LatLng latLng) {
 
+        Geocoder geocoder;
+        List<Address> addresses;
+        geocoder = new Geocoder(getContext(), Locale.getDefault());
+        try {
+            addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        getCurrentWeatherWithLongClick(addresses.get(0).getAddressLine(0), latLng);
+//        MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(a);
+//        Marker marker = mGoogleMap.addMarker(markerOptions);
+
     }
 
     @Override
@@ -422,6 +488,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
 
     List<LatLng> latLngList = new ArrayList<>();
     List<Marker> markerList = new ArrayList<>();
+    List<Marker> markerListLongClick = new ArrayList<>();
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
@@ -429,7 +496,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
         addMapMarkers();
         mGoogleMap.setOnPolylineClickListener(this);
         getLatLngFromAddress("Tan Phu, Ho Chi Minh");
-        InputMethodManager imm = (InputMethodManager)  getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
         //aaa();
 
@@ -443,18 +510,17 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
             }
         });
 
-
+        mGoogleMap.setOnMapLongClickListener(this);
     }
 
-    List<LatLng> sss = new ArrayList<>();
 
     private void addMapMarkers() {
         LatLng latLng = new LatLng(10.762622, 106.660172);
-        MarkerOptions markerOptions = new MarkerOptions()
-                .position(latLng)
-                .title("Ho Chi Minh")
-                .snippet("Wonder of the world!");
-        mGoogleMap.addMarker(markerOptions);
+//        MarkerOptions markerOptions = new MarkerOptions()
+//                .position(latLng)
+//                .title("Ho Chi Minh")
+//                .snippet("Wonder of the world!");
+//        mGoogleMap.addMarker(markerOptions);
         //List<Address> addresses = geocoder.getFromLocationName("hochiminh", 1);
 //            if (addresses.size() > 0) {
 //                Address address = addresses.get(0);
@@ -464,7 +530,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
 //                        .title(address.getLocality());
 //
 //            }
-        mGoogleMap.addMarker(markerOptions);
+        // mGoogleMap.addMarker(markerOptions);
         mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
 
     }
@@ -480,7 +546,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
                 if (mMapLayoutState == MAP_LAYOUT_STATE_CONTRACTED) {
                     mMapLayoutState = MAP_LAYOUT_STATE_EXPANDED;
                     expandMapAnimation();
-                    InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
+                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
                             Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
                     constraintLayout.setVisibility(View.GONE);
@@ -489,7 +555,7 @@ public class WeatherMapFragment extends Fragment implements OnMapReadyCallback, 
                     contractMapAnimation();
                     constraintLayout.setVisibility(View.VISIBLE);
 
-                    InputMethodManager imm = (InputMethodManager)  getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
                 }
                 break;
